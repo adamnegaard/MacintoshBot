@@ -5,11 +5,11 @@ namespace MacintoshBot.Entities
 {
     public class Role
     {
-        [Key]
         public string RefName { get; set; }
+        public ulong GuildId { get; set; }
         [Required]
         public ulong DiscordRoleId { get; set; }
-        public DiscordRole DiscordRole { get; set; }
+        [Required]
         public int Rank { get; set; }
         
     }

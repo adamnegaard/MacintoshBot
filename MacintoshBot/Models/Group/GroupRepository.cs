@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using DSharpPlus.Entities;
@@ -9,16 +10,17 @@ namespace MacintoshBot.Models.Group
 {
     public class GroupRepository : IGroupRepository
     {
-        private IDiscordContext _context;
+        private readonly IDiscordContext _context;
 
         public GroupRepository(IDiscordContext context)
         {
             _context = context;
         }
 
-        public async Task<GroupDTO> Get(string name)
+        public async Task<GroupDTO> Get(string name, ulong guildId)
         {
-            var group = await _context.Groups.FirstOrDefaultAsync(e => e.Name.ToLower() == name.ToLower());
+            var group = await _context.Groups.FirstOrDefaultAsync(g => g.Name.ToLower().Equals(name.ToLower()) && g.GuildId == guildId);
+            
             if (group == null)
             {
                 return null;
@@ -27,62 +29,71 @@ namespace MacintoshBot.Models.Group
             return new GroupDTO
             {
                 Name = group .Name,
+                GuildId = guildId,
                 FullName = group .FullName,
                 IsGame = group .IsGame,
                 EmojiName = group .EmojiName,
-                DiscordRoleId = group .DiscordRoleId,
-                DiscordRole = group.DiscordRole
+                DiscordRoleId = group .DiscordRoleId
             };
         }
 
-        public async Task<DiscordRole> GetFromEmoji(string emojiName)
+        public async Task<ulong> GetFromEmoji(string emojiName, ulong guildId)
         {
-            var game = await _context.Groups.FirstOrDefaultAsync(g => g.EmojiName == emojiName);
-            if (game == null)
+            var group = await _context.Groups.FirstOrDefaultAsync(g => g.EmojiName.Equals(emojiName) && g.GuildId == guildId);
+            
+            if (group == null)
             {
-                return null;
+                return 0;
             }
 
-            return game.DiscordRole;
+            return group.DiscordRoleId;
         }
 
-        public async Task<IEnumerable<GroupDTO>> Get()
+        public async Task<IEnumerable<GroupDTO>> Get(ulong guildId)
         {
-            return await _context.Groups.Select(g => new GroupDTO
+            return await _context.Groups.Where(g => g.GuildId == guildId).Select(g => new GroupDTO
             {
                 Name = g.Name,
+                GuildId = g.GuildId,
                 FullName = g.FullName,
                 IsGame = g.IsGame,
                 EmojiName = g.EmojiName,
-                DiscordRoleId = g.DiscordRoleId,
-                DiscordRole = g.DiscordRole
+                DiscordRoleId = g.DiscordRoleId
             }).ToListAsync();
         }
 
         public async Task<bool> Create(GroupDTO game)
         {
-            var gameCreate = new Entities.Group
+            var existingGroup = await _context.Groups.FirstOrDefaultAsync(g =>
+                g.Name.ToLower().Equals(game.Name.ToLower()) && g.GuildId == game.GuildId);
+            if (existingGroup != null)
+            {
+                return false;
+            }
+            var groupCreate = new Entities.Group
             {
                 Name = game.Name,
+                GuildId = game.GuildId,
                 FullName = game.FullName,
                 IsGame = game.IsGame,
                 EmojiName = game.EmojiName,
-                DiscordRoleId = game.DiscordRoleId,
-                DiscordRole = game.DiscordRole
+                DiscordRoleId = game.DiscordRoleId
             };
-            await _context.Groups.AddAsync(gameCreate);
+            await _context.Groups.AddAsync(groupCreate);
             await _context.SaveChangesAsync();
             return true;
         }
 
-        public async Task<bool> Delete(string name)
+        public async Task<bool> Delete(string name, ulong guildId)
         {
-            var game = await _context.Groups.FirstOrDefaultAsync(g => g.Name.ToLower() == name.ToLower());
-            if (game == null)
+            var group = await _context.Groups.FirstOrDefaultAsync(g => g.Name.ToLower().Equals(name.ToLower()) && g.GuildId == guildId);
+            
+            if (group == null)
             {
                 return false;
             }
-            _context.Groups.Remove(game);
+            
+            _context.Groups.Remove(group);
             await _context.SaveChangesAsync();
             return true; 
         }

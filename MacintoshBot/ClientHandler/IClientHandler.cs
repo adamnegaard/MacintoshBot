@@ -9,11 +9,14 @@ namespace MacintoshBot
 {
     public interface IClientHandler
     {
-        Task SelfAssignRoles(DiscordClient client);
-        Task<DiscordMessageBuilder> GetReactionMessage(DiscordClient client);
-        Task<DiscordMessage> SendSelfAssignMessage(DiscordClient client);
+        Task SelfAssignRoles(DiscordClient client, ulong guildId);
+        Task<DiscordMessageBuilder> GetReactionMessage(DiscordClient client, ulong guildId);
+        Task<DiscordMessage> SendSelfAssignMessage(DiscordClient client, ulong guildId);
+        Task<DiscordRole> DiscordRoleFromId(DiscordClient client, ulong roleId, ulong guildId);
         Task<int> EvaluateUserLevelUpdrades(DiscordClient client);
-        Task MakeMemberMod(DiscordClient client, DiscordMember member, DiscordRole modRole);
-        Task RevokeOtherRoles(DiscordMember member, RoleDTO newRole);
+        Task DailyFact(DiscordClient client);
+        Task MakeMemberMod(DiscordClient client, DiscordMember member, DiscordRole modRole, ulong guildId);
+        Task MakeUnMod(DiscordClient client, DiscordMember member, DiscordRole modRole, ulong guildId);
+        Task RevokeOtherRoles(DiscordClient client, DiscordMember member, RoleDTO newRole, ulong guildId);
     }
 }

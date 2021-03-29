@@ -2,9 +2,9 @@
 
 namespace MacintoshBot.Entities
 {
-    public class Message
+    public class Channels
     {
-        public ulong DiscordId { get; set; }
+        public ulong ChannelId { get; set; }
         public ulong GuildId { get; set; }
         [Required]
         public string RefName { get; set; }

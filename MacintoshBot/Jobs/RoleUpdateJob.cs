@@ -1,13 +1,10 @@
 ﻿using System;
-using System.Linq;
-using System.Net;
-using System.Net.Mail;
 using System.Threading.Tasks;
 using DSharpPlus;
 using Microsoft.Extensions.DependencyInjection;
 using Quartz;
 
-namespace MacintoshBot.RoleUpdate
+namespace MacintoshBot.Jobs
 {
     //Followed tutorial at https://andrewlock.net/creating-a-quartz-net-hosted-service-with-asp-net-core/
     public class RoleUpdateJob : IJob

@@ -16,9 +16,9 @@ namespace MacintoshBot.Models.Image
             _context = context;
         }
         
-        public async Task<Uri> Get(string imageTitle)
+        public async Task<Uri> Get(string imageTitle, ulong guildId)
         {
-            var image = await _context.Images.FirstOrDefaultAsync(i => i.Title == imageTitle);
+            var image = await _context.Images.FirstOrDefaultAsync(i => i.Title.Equals(imageTitle) && i.GuildId == guildId);
             if (image == null)
             {
                 return null;
@@ -26,9 +26,9 @@ namespace MacintoshBot.Models.Image
             return image.Location;
         }
 
-        public async Task<IEnumerable<string>> Get()
+        public async Task<IEnumerable<string>> Get(ulong guildId)
         {
-            return await _context.Images.Select(i => i.Title).ToListAsync();
+            return await _context.Images.Where(i => i.GuildId == guildId).Select(i => i.Title).ToListAsync();
         }
     }
 }

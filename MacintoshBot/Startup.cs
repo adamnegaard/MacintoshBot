@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Configuration;
 using MacintoshBot.Entities;
+using MacintoshBot.Jobs;
+using MacintoshBot.Models.Channel;
 using MacintoshBot.Models.Group;
 using MacintoshBot.Models.Image;
 using MacintoshBot.Models.Message;
@@ -40,11 +42,12 @@ namespace MacintoshBot
             services.AddScoped<IImageRepository, ImageRepository>();
             services.AddScoped<IGroupRepository, GroupRepository>();
             services.AddScoped<IMessageRepository, MessageRepository>();
+            services.AddScoped<IChannelRepository, ChannelRepository>();
             services.AddSingleton<ClientConfig>();
             
             //Models
             services.AddScoped<IXpGrantModel, XpGrantModel>();
-            services.AddScoped<IClientHandler, ClientHandler>();
+            services.AddScoped<IClientHandler, ClientHandler.ClientHandler>();
             
             //The discord bot
             services.AddDiscordService();
@@ -52,11 +55,10 @@ namespace MacintoshBot
             //Quarts scheduling services
             services.AddSingleton<IJobFactory, SingletonJobFactory>();
             services.AddSingleton<ISchedulerFactory, StdSchedulerFactory>();
-               
-            // Add our job
+            
+            //The timing for our jobs gets set inside the class of QuartzHostedService
             services.AddSingleton<RoleUpdateJob>();
-            //The timing for our job gets set inside the class of QuartzHostedService
-            services.AddSingleton<IJob, RoleUpdateJob>();
+            services.AddSingleton<DailyFactJob>();
             
             services.AddHostedService<QuartzHostedService>();
 

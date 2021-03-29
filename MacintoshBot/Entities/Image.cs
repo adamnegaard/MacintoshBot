@@ -6,9 +6,8 @@ namespace MacintoshBot.Entities
 {
     public class Image
     {
-        [Key]
         public string Title { get; set; }
-        
+        public ulong GuildId { get; set; }
         [Required]
         public Uri Location { get; set; }
     }

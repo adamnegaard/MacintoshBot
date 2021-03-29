@@ -1,4 +1,4 @@
-namespace MacintoshBot.Entities
+namespace MacintoshBot.ServerConstants
 {
     public enum Channel : ulong 
     {

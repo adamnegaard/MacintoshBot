@@ -1,24 +1,17 @@
 ﻿using System;
-using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
-using DSharpPlus.VoiceNext;
 using MacintoshBot.Commands;
-using MacintoshBot.Entities;
 using MacintoshBot.Models.Group;
 using MacintoshBot.Models.Message;
 using MacintoshBot.Models.Role;
 using MacintoshBot.Models.User;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 namespace MacintoshBot
 {
     public partial class Bot : IHostedService, IDisposable
@@ -66,7 +59,7 @@ namespace MacintoshBot
             _client.Ready += OnClientReady;
             _client.MessageReactionAdded += OnReactionAdded;
             _client.MessageReactionRemoved += OnReactionRemoved;
-            _client.GuildMemberAdded += OnMemberJoined;
+            _client.GuildMemberUpdated += OnGuildMemberUpdated;
             _client.GuildMemberRemoved += OnMemberRemoved;
             _client.GuildAvailable += OnGuildAvailable;
             _client.VoiceStateUpdated += OnVoiceStateUpdate;
@@ -77,7 +70,7 @@ namespace MacintoshBot
             _commands.RegisterCommands<LevelCommands>();
             _commands.RegisterCommands<RandomCommands>();
         }
-        
+
         private Task OnClientReady(DiscordClient client, ReadyEventArgs eventArgs)
         {
             return Task.CompletedTask;

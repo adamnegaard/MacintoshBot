@@ -4,7 +4,7 @@ namespace MacintoshBot
 {
     public interface IXpGrantModel
     {
-        void EnterVoiceChannel(ulong memberId);
-        Task<int> ExitVoiceChannel(ulong memberId);
+        void EnterVoiceChannel(ulong memberId, ulong guildId);
+        Task<int> ExitVoiceChannel(ulong memberId, ulong guildId);
     }
 }

@@ -7,7 +7,8 @@ namespace MacintoshBot.Models.Group
     {
         
         public string Name { get; set; }
-
+        public ulong GuildId { get; set; }
+        
         private string _fullName;
         public string FullName
         {
@@ -17,6 +18,5 @@ namespace MacintoshBot.Models.Group
         public bool IsGame { get; set; }
         public string EmojiName { get; set; }
         public ulong DiscordRoleId { get; set; }
-        public DiscordRole DiscordRole { get; set; }
     }
 }

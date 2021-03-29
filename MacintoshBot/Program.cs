@@ -36,7 +36,6 @@ namespace MacintoshBot
                     webBuilder.UseStartup<Startup>()
                         .ConfigureLogging(logging =>
                         {
-                            logging.ClearProviders();
                             logging.SetMinimumLevel(LogLevel.Information);
                         })
                         //For some odd reason, this line is required for dependency injection in this case? See https://github.com/aspnet/DependencyInjection/issues/578

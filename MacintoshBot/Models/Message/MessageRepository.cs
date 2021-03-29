@@ -7,22 +7,17 @@ namespace MacintoshBot.Models.Message
 {
     public class MessageRepository : IMessageRepository
     {
-        private IDiscordContext _context;
+        private readonly IDiscordContext _context;
 
         public MessageRepository(IDiscordContext context)
         {
             _context = context;
         }
         
-        public async Task<ulong> Get(string refName)
+        public async Task<ulong> Get(string refName, ulong guildId)
         {
-            var message = await _context.Messages.FirstOrDefaultAsync(m => m.RefName.ToLower().Equals(refName.ToLower()));
-            if (message == null)
-            {
-                return 0;
-            }
-
-            return message.DiscordId;
+            var message = await _context.Messages.FirstOrDefaultAsync(m => m.RefName.ToLower().Equals(refName.ToLower()) && m.GuildId == guildId);
+            return message?.DiscordId ?? 0;
         }
 
         public async Task Create(MessageDTO message)
@@ -30,6 +25,7 @@ namespace MacintoshBot.Models.Message
             var messageCreate = new Entities.Message
             {
                 DiscordId = message.DiscordId,
+                GuildId = message.GuildId,
                 RefName = message.RefName,
             };
             await _context.Messages.AddAsync(messageCreate);

@@ -16,12 +16,14 @@ namespace MacintoshBot.Commands
     {
         
         private readonly IImageRepository _repository;
+        private readonly IClientHandler _clientHandler;
 
-        public RandomCommands(IImageRepository repository)
+        public RandomCommands(IImageRepository repository, IClientHandler clientHandler)
         {
             _repository = repository;
+            _clientHandler = clientHandler;
         }
-        
+
         [Command("roll")]
         [Description("Roll a dice from 1-6")]
         public async Task Roll(CommandContext ctx, [Description("(Optional) min value")] int min = 1, [Description("(Optional) max value")] int max = 6)
@@ -30,26 +32,33 @@ namespace MacintoshBot.Commands
             await ctx.Channel.SendMessageAsync($"{ctx.Member.DisplayName} rolled: {random.Next(min, max)}");
         }
 
-        [Command("poggers")]
-        [Description("A poggers image")]
-        public async Task Poggers(CommandContext ctx)
-        {
-            var imageEmbed = new DiscordEmbedBuilder
-            {
-                Title = "Paaaawg Chaaampion",
-                Description = "A wild pawgers appeared"
-            };
-            imageEmbed.WithImageUrl(await _repository.Get("poggers"));
-            await ctx.Channel.SendMessageAsync(embed: imageEmbed);
-        }
+        // [Command("poggers")]
+        // [Description("A poggers image")]
+        // public async Task Poggers(CommandContext ctx)
+        // {
+        //     var guildId = ctx.Guild.Id;
+        //     var imageEmbed = new DiscordEmbedBuilder
+        //     {
+        //         Title = "Paaaawg Chaaampion",
+        //         Description = "A wild pawgers appeared"
+        //     };
+        //     imageEmbed.WithImageUrl(await _repository.Get("poggers"));
+        //     await ctx.Channel.SendMessageAsync(embed: imageEmbed);
+        // }
         
         [Command("images")]
         [Description("See the list of available images")]
         public async Task Images(CommandContext ctx)
         {
-            var images = await _repository.Get();
+            var guildId = ctx.Guild.Id;
+            var images = await _repository.Get(guildId);
+            if (images == null)
+            {
+                await ctx.Channel.SendMessageAsync("Something went wrong");
+                return;
+            }
             var builder = new StringBuilder();
-            builder.Append("The list of available images is:\n");
+            builder.Append("**The list of available images is:**\n");
             foreach (var imageTitle in images)
             {
                 builder.Append(imageTitle);
@@ -63,10 +72,11 @@ namespace MacintoshBot.Commands
         [Description("Show a image based on its string representation")]
         public async Task ShowImage(CommandContext ctx, [Description("Name of image")] string imageTitle)
         {
-            var image = await _repository.Get(imageTitle);
+            var guildId = ctx.Guild.Id;
+            var image = await _repository.Get(imageTitle, guildId);
             if (image == null)
             {
-                await ctx.Channel.SendMessageAsync($"Could not find the image {imageTitle}, try ?images");
+                await ctx.Channel.SendMessageAsync($"Could not find the image {imageTitle}, try `?images`");
                 return;
             }
             var imageEmbed = new DiscordEmbedBuilder
