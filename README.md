@@ -21,18 +21,22 @@ dotnet ef database update
 ```
 
 ### Necessary entries
-The bot needs a few entries in the `Messages` and `Channels` table to function properly:
+The bot needs a few entries in the `Groups` and `Channels` tables to function properly:
 
-#### Messages
-To begin with, it needs an ID of a message that will be used in your guild for members to self assign their roles
+#### Groups
+To begin with, the bot will send a self assign message if none is already present. The role message will be filled based on the entires in the `Groups` table.
 ```
-INSERT INTO public."Messages"(
-	"RefName", "GuildId", "MessageId")
-VALUES ('role', <your_guild_id>, <role_message_id>);
+INSERT INTO public."Groups"(
+	"Name", "GuildId", "FullName", "IsGame", "EmojiName", "DiscordRoleId")
+	VALUES 
+(<group-abbreviation>, <your_guild_id>, <group-full-name>, <boolean_is_game>, <emoji_name (for example ':computer:'>, <Role_id>),
+...
+...
+(<group-abbreviation>, <your_guild_id>, <group-full-name>, <boolean_is_game>, <emoji_name (for example ':computer:'>, <Role_id>);
 ```
 
 #### Channels
-It needs an id of the roles channel (the channel of which the role message is sent), an id of a new members channel to notify of leaves (usually same channel as where users are welcomed to the server) and an id of a daily facts channel to send daily facts.
+It needs an id of the roles channel (the channel of which the role message should be sent), an id of a new members channel to notify of leaves (usually same channel as where users are welcomed to the server) and an id of a daily facts channel to send daily facts.
 ```
 INSERT INTO public."Channels"(
 	"RefName", "GuildId", "ChannelId")
