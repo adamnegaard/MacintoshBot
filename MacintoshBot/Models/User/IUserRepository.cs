@@ -7,11 +7,11 @@ namespace MacintoshBot.Models.User
 {
     public interface IUserRepository
     {
-        Task Create(ulong userId, ulong guildId);
-        Task Delete(ulong userId, ulong guildId);
+        Task<Status> Create(ulong userId, ulong guildId);
+        Task<Status> Delete(ulong userId, ulong guildId);
         Task<IEnumerable<UserDTO>> Get(ulong guildId);
-        Task<IEnumerable<UserDTO>> GetAll();
-        Task<int> AddXp(ulong userId, ulong guildId, int xpAmout);
         Task<UserDTO> Get(ulong userId, ulong guildId);
+        Task<IEnumerable<UserDTO>> Get();
+        Task<int> AddXp(ulong userId, ulong guildId, int xpAmount);
     }
 }

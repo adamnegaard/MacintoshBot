@@ -43,8 +43,13 @@ namespace MacintoshBot.ClientHandler
             }
             
             //Get the "roles" channel
-            var roleChannelId = await _channelRepository.Get("role", guildId);
-            var roleChannel = server.Channels.Values.FirstOrDefault(channel => channel.Id == roleChannelId);
+            var roleChannelDTO = await _channelRepository.Get("role", guildId);
+            if (roleChannelDTO == null)
+            {
+                await Console.Error.WriteLineAsync("Could not find the roles channel in the database");
+                return; 
+            }
+            var roleChannel = server.Channels.Values.FirstOrDefault(channel => channel.Id == roleChannelDTO.ChannelId);
             if (roleChannel == null)
             {
                 await Console.Error.WriteLineAsync("Could not find the roles channel");
@@ -77,8 +82,13 @@ namespace MacintoshBot.ClientHandler
             }
             
             //Get the "roles" channel
-            var roleChannelId = await _channelRepository.Get("role", guildId);
-            var roleChannel = server.Channels.Values.FirstOrDefault(channel => channel.Id == roleChannelId);
+            var roleChannelDTO = await _channelRepository.Get("role", guildId);
+            if (roleChannelDTO == null)
+            {
+                await Console.Error.WriteLineAsync("Could not find the roles channel in the database");
+                return null;
+            }
+            var roleChannel = server.Channels.Values.FirstOrDefault(channel => channel.Id == roleChannelDTO.ChannelId);
             if (roleChannel == null)
             {
                 await Console.Error.WriteLineAsync("Could not find the roles channel");
@@ -112,7 +122,7 @@ namespace MacintoshBot.ClientHandler
         //FIXME.
         public async Task<int> EvaluateUserLevelUpdrades(DiscordClient client)
         {
-            var members = await _userRepository.GetAll();
+            var members = await _userRepository.Get();
 
             var upgrades = 0;
             foreach (var member in members)
@@ -152,8 +162,12 @@ namespace MacintoshBot.ClientHandler
 
             foreach (var guild in guilds)
             {
-                var factChannelId = await _channelRepository.Get("dailyfacts", guild.Id);
-                var factChannel = guild.Channels.FirstOrDefault(c => c.Key == factChannelId).Value;
+                var factChannelDTO = await _channelRepository.Get("dailyfacts", guild.Id);
+                if (factChannelDTO == null)
+                {
+                    continue;
+                }
+                var factChannel = guild.Channels.FirstOrDefault(c => c.Key == factChannelDTO.ChannelId).Value;
                 if (factChannel == null)
                 {
                     continue;

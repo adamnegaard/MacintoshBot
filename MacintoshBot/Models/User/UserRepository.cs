@@ -17,8 +17,13 @@ namespace MacintoshBot.Models.User
             _context = context;
         }
         
-        public async Task Create(ulong userId, ulong guildId)
+        public async Task<Status> Create(ulong userId, ulong guildId)
         {
+            var existingUser = await Get(userId, guildId);
+            if (existingUser != null)
+            {
+                return Status.Conflict;
+            }
             var newUser = new Entities.User
             {
                 UserId = userId,
@@ -27,17 +32,19 @@ namespace MacintoshBot.Models.User
             };
             await _context.Members.AddAsync(newUser);
             await _context.SaveChangesAsync();
+            return Status.Created;
         }
 
-        public async Task Delete(ulong userId, ulong guildId)
+        public async Task<Status> Delete(ulong userId, ulong guildId)
         {
             var existingUser = await _context.Members.FirstOrDefaultAsync(u => u.UserId == userId && u.GuildId == guildId);
             if (existingUser == null)
             {
-                return;
+                return Status.BadRequest;
             }
             _context.Members.Remove(existingUser);
             await _context.SaveChangesAsync();
+            return Status.Deleted;
         }
 
         public async Task<IEnumerable<UserDTO>> Get(ulong guildId)
@@ -50,7 +57,7 @@ namespace MacintoshBot.Models.User
             }).ToListAsync();
         }
 
-        public async Task<IEnumerable<UserDTO>> GetAll()
+        public async Task<IEnumerable<UserDTO>> Get()
         {
             return await _context.Members.Select(u => new UserDTO
             {
@@ -60,14 +67,14 @@ namespace MacintoshBot.Models.User
             }).ToListAsync();
         }
 
-        public async Task<int> AddXp(ulong userId, ulong guildId, int xpAmout)
+        public async Task<int> AddXp(ulong userId, ulong guildId, int xpAmount)
         {
             var user = await _context.Members.FirstOrDefaultAsync(u => u.UserId == userId && u.GuildId == guildId);
             if (user == null)
             {
                 return 0;
             }
-            user.Xp += xpAmout;
+            user.Xp += xpAmount;
             await _context.SaveChangesAsync();
             return user.Xp;
         }

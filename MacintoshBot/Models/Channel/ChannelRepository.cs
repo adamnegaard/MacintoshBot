@@ -13,14 +13,29 @@ namespace MacintoshBot.Models.Channel
             _context = context;
         }
         
-        public async Task<ulong> Get(string refName, ulong guildId)
+        public async Task<ChannelDTO> Get(string refName, ulong guildId)
         {
             var channel = await _context.Channels.FirstOrDefaultAsync(c => c.RefName.ToLower().Equals(refName.ToLower()) && c.GuildId == guildId);
-            return channel?.ChannelId ?? 0;
+            if (channel == null)
+            {
+                return null;
+            }
+            return new ChannelDTO
+            {
+                RefName = channel.RefName,
+                GuildId = channel.GuildId,
+                ChannelId = channel.ChannelId
+            };
         }
 
-        public async Task<ChannelDTO> Create(ChannelDTO channel)
+        public async Task<Status> Create(ChannelDTO channel)
         {
+            var existingChannel = await Get(channel.RefName, channel.GuildId);
+            if (existingChannel != null)
+            {
+                return Status.Conflict;
+            }
+            
             var channelCreate = new Entities.Channel
             {
                 RefName = channel.RefName,
@@ -28,18 +43,9 @@ namespace MacintoshBot.Models.Channel
                 ChannelId = channel.ChannelId,
             };
             
-            var createdChannel = await _context.Channels.AddAsync(channelCreate);
+            await _context.Channels.AddAsync(channelCreate);
             await _context.SaveChangesAsync();
-            if (createdChannel.Entity == null)
-            {
-                return null;
-            }
-            return new ChannelDTO
-            {
-                RefName = createdChannel.Entity.RefName,
-                GuildId = createdChannel.Entity.ChannelId,
-                ChannelId = createdChannel.Entity.ChannelId
-            };
+            return Status.Created;
         }
     }
 }

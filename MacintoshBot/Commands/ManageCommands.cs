@@ -6,6 +6,7 @@ using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
+using MacintoshBot.Models;
 using MacintoshBot.Models.Channel;
 using MacintoshBot.Models.Group;
 using MacintoshBot.Models.Message;
@@ -168,7 +169,8 @@ namespace MacintoshBot.Commands
                 DiscordRoleId = role.Id,
             };
             //Insert into the database
-            if (!await _groupRepository.Create(group))
+            var status = await _groupRepository.Create(group);
+            if (status != Status.Created)
             {
                 await message.ModifyAsync("Error on inserting into database");
                 return;
@@ -197,11 +199,16 @@ namespace MacintoshBot.Commands
                 return;
             }
             //Find the role channel so the bot can mention it
-            var roleChannelId = await _channelRepository.Get("role", guildId);
-            var rolesChannel = ctx.Guild.Channels.Values.FirstOrDefault(c => c.Id == roleChannelId);
+            var roleChannelDTO = await _channelRepository.Get("role", guildId);
+            if (roleChannelDTO == null)
+            {
+                await message.ModifyAsync("Could not find the roles channel in the database");
+                return;
+            }
+            var rolesChannel = ctx.Guild.Channels.Values.FirstOrDefault(c => c.Id == roleChannelDTO.ChannelId);
             if (rolesChannel == null)
             {
-                await message.ModifyAsync("Could not find the roles channel where users react");
+                await message.ModifyAsync("Could not find the roles channel");
                 return;
             }
             //Send a confirmation
@@ -247,7 +254,8 @@ namespace MacintoshBot.Commands
             var roleName = role.Name;
             await role.DeleteAsync($"Role deleted by user {ctx.Member.DisplayName}");
             //Delete it from the repository
-            if (!await _groupRepository.Delete(name, guildId))
+            var status = await _groupRepository.Delete(name, guildId);
+            if (status != Status.Deleted)
             {
                 await message.ModifyAsync($"Some error occured, did not remove {group.Name} from the database");
                 return;
@@ -330,8 +338,12 @@ namespace MacintoshBot.Commands
         {
             var guildId = ctx.Guild.Id;
             //Get the "roles" channel
-            var roleChannelId = await _channelRepository.Get("role", guildId);
-            var roleChannel = ctx.Guild.Channels.Values.FirstOrDefault(channel => channel.Id == roleChannelId);
+            var roleChannelDTO = await _channelRepository.Get("role", guildId);
+            if (roleChannelDTO == null)
+            {
+                return "Could not find the `roles` channel in the database";
+            }
+            var roleChannel = ctx.Guild.Channels.Values.FirstOrDefault(channel => channel.Id == roleChannelDTO.ChannelId);
             if (roleChannel == null)
             {
                 return "Could not find the `roles` channel";
@@ -354,8 +366,12 @@ namespace MacintoshBot.Commands
         {
             var guildId = ctx.Guild.Id;
             //Get the "roles" channel
-            var roleChannelId = await _channelRepository.Get("role", guildId);
-            var roleChannel = ctx.Guild.Channels.Values.FirstOrDefault(channel => channel.Id == roleChannelId);
+            var roleChannelDTO = await _channelRepository.Get("role", guildId);
+            if (roleChannelDTO == null)
+            {
+                return "Could not find the `roles` channel in the database";
+            }
+            var roleChannel = ctx.Guild.Channels.Values.FirstOrDefault(channel => channel.Id == roleChannelDTO.ChannelId);
             if (roleChannel == null)
             {
                 return "Could not find the `roles` channel";

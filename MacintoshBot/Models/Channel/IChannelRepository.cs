@@ -4,8 +4,8 @@ namespace MacintoshBot.Models.Channel
 {
     public interface IChannelRepository
     {
-        Task<ulong> Get(string refName, ulong guildId);
+        Task<ChannelDTO> Get(string refName, ulong guildId);
 
-        Task<ChannelDTO> Create(ChannelDTO channel);
+        Task<Status> Create(ChannelDTO channel);
     }
 }

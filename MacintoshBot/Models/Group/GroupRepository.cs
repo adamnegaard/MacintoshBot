@@ -37,7 +37,7 @@ namespace MacintoshBot.Models.Group
             };
         }
 
-        public async Task<ulong> GetFromEmoji(string emojiName, ulong guildId)
+        public async Task<ulong> GetRoleIdFromEmoji(string emojiName, ulong guildId)
         {
             var group = await _context.Groups.FirstOrDefaultAsync(g => g.EmojiName.Equals(emojiName) && g.GuildId == guildId);
             
@@ -62,13 +62,13 @@ namespace MacintoshBot.Models.Group
             }).ToListAsync();
         }
 
-        public async Task<bool> Create(GroupDTO game)
+        public async Task<Status> Create(GroupDTO game)
         {
             var existingGroup = await _context.Groups.FirstOrDefaultAsync(g =>
                 g.Name.ToLower().Equals(game.Name.ToLower()) && g.GuildId == game.GuildId);
             if (existingGroup != null)
             {
-                return false;
+                return Status.Conflict;
             }
             var groupCreate = new Entities.Group
             {
@@ -81,21 +81,21 @@ namespace MacintoshBot.Models.Group
             };
             await _context.Groups.AddAsync(groupCreate);
             await _context.SaveChangesAsync();
-            return true;
+            return Status.Created;
         }
 
-        public async Task<bool> Delete(string name, ulong guildId)
+        public async Task<Status> Delete(string name, ulong guildId)
         {
             var group = await _context.Groups.FirstOrDefaultAsync(g => g.Name.ToLower().Equals(name.ToLower()) && g.GuildId == guildId);
             
             if (group == null)
             {
-                return false;
+                return Status.BadRequest;
             }
             
             _context.Groups.Remove(group);
             await _context.SaveChangesAsync();
-            return true; 
+            return Status.Deleted;
         }
     }
 }

@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
+using MacintoshBot.Models;
 using MacintoshBot.Models.Message;
 
 
@@ -17,7 +18,7 @@ namespace MacintoshBot
             var guildId = eventArgs.Guild.Id;
             //Get the needed variables
             var messageId = eventArgs.Message.Id;
-            var roleId = await _groupRepository.GetFromEmoji(eventArgs.Emoji.GetDiscordName(), guildId);
+            var roleId = await _groupRepository.GetRoleIdFromEmoji(eventArgs.Emoji.GetDiscordName(), guildId);
             var reactionUser = eventArgs.User as DiscordMember;
             
             if(reactionUser == null || reactionUser.IsBot)
@@ -38,7 +39,7 @@ namespace MacintoshBot
             var guildId = eventArgs.Guild.Id;
             //Get the needed variables
             var messageId = eventArgs.Message.Id;
-            var roleId = await _groupRepository.GetFromEmoji(eventArgs.Emoji.GetDiscordName(), guildId);
+            var roleId = await _groupRepository.GetRoleIdFromEmoji(eventArgs.Emoji.GetDiscordName(), guildId);
             var reactionUser = eventArgs.User as DiscordMember;
             
             if(reactionUser == null || reactionUser.IsBot)
@@ -70,7 +71,12 @@ namespace MacintoshBot
         private async Task AssignNewUserRoles(DiscordMember member, ulong guildId)
         {
             //Create the user
-            await _userRepository.Create(member.Id, guildId);
+            var status = await _userRepository.Create(member.Id, guildId);
+            if (status != Status.Created)
+            {
+                return;
+            }
+            
             //Get the scrub role
             var lowestRank = await _levelRoleRepository.GetLowestRank(guildId);
             if (lowestRank == null)
@@ -87,17 +93,35 @@ namespace MacintoshBot
         {
             var leftUser = eventArgs.Member;
             var guildId = eventArgs.Guild.Id;
+            
+            var status = await RemoveUser(leftUser, guildId);
+            if (status != Status.Deleted)
+            {
+                return;
+            }
+            
             await NotifyOfMemberLeave(leftUser, guildId);
-            await RemoveUser(leftUser, guildId);
         }
 
         private async Task NotifyOfMemberLeave(DiscordMember member, ulong guildId)
         {
             var message = RandomMemberLeaveMessage(member.DisplayName);
             var server = _client.Guilds.Values.FirstOrDefault(g => g.Id == guildId);
-            var newMemberChannelId = await _channelRepository.Get("newmembers", guildId);
-            var welcomeChannel = server?.Channels.Values.FirstOrDefault(c => c.Id == newMemberChannelId);
-            await welcomeChannel.SendMessageAsync(message); 
+            if (server == null)
+            {
+                return;
+            }
+            var newMemberChannelDTO = await _channelRepository.Get("newmembers", guildId);
+            if (newMemberChannelDTO == null)
+            {
+                return;
+            }
+            var newMemberDiscordChannel = server.Channels.Values.FirstOrDefault(c => c.Id == newMemberChannelDTO.ChannelId);
+            if (newMemberDiscordChannel == null)
+            {
+                return;
+            }
+            await newMemberDiscordChannel.SendMessageAsync(message); 
         }
         
         private async Task OnGuildAvailable(DiscordClient client, GuildCreateEventArgs eventArgs)
@@ -133,9 +157,9 @@ namespace MacintoshBot
         }
 
         //Helper for removing a user
-        private async Task RemoveUser(DiscordMember member, ulong guildId)
+        private async Task<Status> RemoveUser(DiscordMember member, ulong guildId)
         {
-            await _userRepository.Delete(member.Id, guildId);
+            return await _userRepository.Delete(member.Id, guildId);
         }
 
         private string RandomMemberLeaveMessage(string memberName)
