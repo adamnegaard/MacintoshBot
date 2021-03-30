@@ -51,7 +51,7 @@ namespace MacintoshBot.Commands
                 return;
             }
             await _clientHandler.MakeMemberMod(ctx.Client, member, modRole, guildId); 
-            await ctx.Channel.SendMessageAsync($"Made {member.DisplayName} a moderator!");
+            await ctx.Channel.SendMessageAsync($"Made {member.Mention} a moderator!");
         }
         
         [Command("UnMod")]
@@ -73,7 +73,7 @@ namespace MacintoshBot.Commands
                 return;
             }
             await _clientHandler.MakeUnMod(ctx.Client, member, modRole, guildId); 
-            await ctx.Channel.SendMessageAsync($"Revoked the moderator role from {member.DisplayName}");
+            await ctx.Channel.SendMessageAsync($"Revoked the moderator role from {member.Mention}");
         }
 
         [Command("grantrole")]

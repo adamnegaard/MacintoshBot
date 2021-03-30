@@ -57,7 +57,8 @@ namespace MacintoshBot
         private async Task OnGuildMemberUpdated(DiscordClient client, GuildMemberUpdateEventArgs eventArgs)
         {
             var pendingAfter = eventArgs.PendingAfter;
-            if (pendingAfter == false)
+            var roles = eventArgs.Member.Roles;
+            if (pendingAfter == false && !roles.Any())
             {
                 var guildId = eventArgs.Guild.Id;
                 var joinedMember = eventArgs.Member;

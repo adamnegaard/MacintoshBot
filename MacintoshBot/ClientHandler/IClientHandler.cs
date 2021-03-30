@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.Entities;
 using MacintoshBot.Entities;
+using MacintoshBot.Models.Facts;
 using MacintoshBot.Models.Role;
 
 namespace MacintoshBot
@@ -18,5 +19,6 @@ namespace MacintoshBot
         Task MakeMemberMod(DiscordClient client, DiscordMember member, DiscordRole modRole, ulong guildId);
         Task MakeUnMod(DiscordClient client, DiscordMember member, DiscordRole modRole, ulong guildId);
         Task RevokeOtherRoles(DiscordClient client, DiscordMember member, RoleDTO newRole, ulong guildId);
+        Task CreateFactMessage(DiscordClient client, FactDTO fact, DiscordChannel channel);
     }
 }

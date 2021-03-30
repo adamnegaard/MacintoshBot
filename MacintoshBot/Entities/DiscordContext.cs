@@ -12,6 +12,7 @@ namespace MacintoshBot.Entities
         public DbSet<Message> Messages { get; set; }
         public DbSet<Role> LevelRoles { get; set; }
         public DbSet<Channel> Channels { get; set; }
+        public DbSet<Fact> Facts { get; set; }
 
         public DiscordContext(DbContextOptions<DiscordContext> options)
             : base(options)
@@ -56,6 +57,11 @@ namespace MacintoshBot.Entities
             {
                 entity
                     .HasKey(r => new {r.RefName, r.GuildId});
+            });
+            modelBuilder.Entity<Fact>(entity =>
+            {
+                entity
+                    .HasKey(f => f.Id);
             });
             
             //For serial keys

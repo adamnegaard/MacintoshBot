@@ -2,7 +2,7 @@
 
 namespace MacintoshBot
 {
-    public class DailyFact
+    public class DailyFactJson
     {
         public string Text { get; set; }
     }

@@ -3,6 +3,7 @@ using System.Configuration;
 using MacintoshBot.Entities;
 using MacintoshBot.Jobs;
 using MacintoshBot.Models.Channel;
+using MacintoshBot.Models.Facts;
 using MacintoshBot.Models.Group;
 using MacintoshBot.Models.Image;
 using MacintoshBot.Models.Message;
@@ -43,6 +44,7 @@ namespace MacintoshBot
             services.AddScoped<IGroupRepository, GroupRepository>();
             services.AddScoped<IMessageRepository, MessageRepository>();
             services.AddScoped<IChannelRepository, ChannelRepository>();
+            services.AddScoped<IFactRepository, FactRepository>();
             services.AddSingleton<ClientConfig>();
             
             //Models

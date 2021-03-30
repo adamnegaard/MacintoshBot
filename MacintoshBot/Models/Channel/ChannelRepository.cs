@@ -19,9 +19,27 @@ namespace MacintoshBot.Models.Channel
             return channel?.ChannelId ?? 0;
         }
 
-        public Task Create(ChannelDTO channel)
+        public async Task<ChannelDTO> Create(ChannelDTO channel)
         {
-            throw new System.NotImplementedException();
+            var channelCreate = new Entities.Channel
+            {
+                RefName = channel.RefName,
+                GuildId = channel.GuildId,
+                ChannelId = channel.ChannelId,
+            };
+            
+            var createdChannel = await _context.Channels.AddAsync(channelCreate);
+            await _context.SaveChangesAsync();
+            if (createdChannel.Entity == null)
+            {
+                return null;
+            }
+            return new ChannelDTO
+            {
+                RefName = createdChannel.Entity.RefName,
+                GuildId = createdChannel.Entity.ChannelId,
+                ChannelId = createdChannel.Entity.ChannelId
+            };
         }
     }
 }

@@ -6,6 +6,6 @@ namespace MacintoshBot.Models.Channel
     {
         Task<ulong> Get(string refName, ulong guildId);
 
-        Task Create(ChannelDTO channel);
+        Task<ChannelDTO> Create(ChannelDTO channel);
     }
 }

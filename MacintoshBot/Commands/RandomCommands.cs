@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
+using MacintoshBot.Models.Facts;
 using MacintoshBot.Models.Image;
 
 namespace MacintoshBot.Commands
@@ -15,12 +16,14 @@ namespace MacintoshBot.Commands
     public class RandomCommands : BaseCommandModule
     {
         
-        private readonly IImageRepository _repository;
+        private readonly IImageRepository _imageRepository;
+        private readonly IFactRepository _factRepository;
         private readonly IClientHandler _clientHandler;
 
-        public RandomCommands(IImageRepository repository, IClientHandler clientHandler)
+        public RandomCommands(IImageRepository imageRepository, IFactRepository factRepository, IClientHandler clientHandler)
         {
-            _repository = repository;
+            _imageRepository = imageRepository;
+            _factRepository = factRepository;
             _clientHandler = clientHandler;
         }
 
@@ -32,26 +35,46 @@ namespace MacintoshBot.Commands
             await ctx.Channel.SendMessageAsync($"{ctx.Member.DisplayName} rolled: {random.Next(min, max)}");
         }
 
-        // [Command("poggers")]
-        // [Description("A poggers image")]
-        // public async Task Poggers(CommandContext ctx)
-        // {
-        //     var guildId = ctx.Guild.Id;
-        //     var imageEmbed = new DiscordEmbedBuilder
-        //     {
-        //         Title = "Paaaawg Chaaampion",
-        //         Description = "A wild pawgers appeared"
-        //     };
-        //     imageEmbed.WithImageUrl(await _repository.Get("poggers"));
-        //     await ctx.Channel.SendMessageAsync(embed: imageEmbed);
-        // }
+        [Command("Poggers")]
+        [Description("A poggers image")]
+        public async Task Poggers(CommandContext ctx)
+        {
+            var guildId = ctx.Guild.Id;
+            var imageEmbed = new DiscordEmbedBuilder
+            {
+                Title = "Paaaawg Chaaampion",
+                Description = "A wild pawgers appeared"
+            };
+            var poggers = await _imageRepository.Get("poggers", guildId);
+            if (poggers == null)
+            {
+                await ctx.Channel.SendMessageAsync("Could not find the poggers image");
+                return;
+            }
+            imageEmbed.WithImageUrl(poggers);
+            await ctx.Channel.SendMessageAsync(embed: imageEmbed);
+        }
         
-        [Command("images")]
+        [Command("fact")]
+        [Description("A poggers image")]
+        public async Task Fact(CommandContext ctx, [Description("Fact number")] int num = 0)
+        {
+            var fact = await _factRepository.Get(num);
+            if (fact == null)
+            {
+                await ctx.Channel.SendMessageAsync($"Could not find the fact with Id {num}");
+                return;
+            }
+
+            await _clientHandler.CreateFactMessage(ctx.Client, fact, ctx.Channel);
+        }
+        
+        [Command("Images")]
         [Description("See the list of available images")]
         public async Task Images(CommandContext ctx)
         {
             var guildId = ctx.Guild.Id;
-            var images = await _repository.Get(guildId);
+            var images = await _imageRepository.Get(guildId);
             if (images == null)
             {
                 await ctx.Channel.SendMessageAsync("Something went wrong");
@@ -68,12 +91,12 @@ namespace MacintoshBot.Commands
             await ctx.Member.SendMessageAsync(builder.ToString()); 
         }
         
-        [Command("show")]
+        [Command("Show")]
         [Description("Show a image based on its string representation")]
-        public async Task ShowImage(CommandContext ctx, [Description("Name of image")] string imageTitle)
+        public async Task Show(CommandContext ctx, [Description("Name of image")] string imageTitle)
         {
             var guildId = ctx.Guild.Id;
-            var image = await _repository.Get(imageTitle, guildId);
+            var image = await _imageRepository.Get(imageTitle, guildId);
             if (image == null)
             {
                 await ctx.Channel.SendMessageAsync($"Could not find the image {imageTitle}, try `?images`");

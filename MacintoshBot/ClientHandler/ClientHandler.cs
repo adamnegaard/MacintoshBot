@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.Entities;
 using MacintoshBot.Models.Channel;
+using MacintoshBot.Models.Facts;
 using MacintoshBot.Models.Group;
 using MacintoshBot.Models.Message;
 using MacintoshBot.Models.Role;
@@ -20,14 +21,16 @@ namespace MacintoshBot.ClientHandler
         private readonly IMessageRepository _messageRepository;
         private readonly ILevelRoleRepository _levelRoleRepository;
         private readonly IChannelRepository _channelRepository;
+        private readonly IFactRepository _factRepository;
 
-        public ClientHandler(IUserRepository userRepository, IGroupRepository groupRepository, IMessageRepository messageRepository, ILevelRoleRepository levelRoleRepository, IChannelRepository channelRepository)
+        public ClientHandler(IUserRepository userRepository, IGroupRepository groupRepository, IMessageRepository messageRepository, ILevelRoleRepository levelRoleRepository, IChannelRepository channelRepository, IFactRepository factRepository)
         {
             _userRepository = userRepository;
             _groupRepository = groupRepository;
             _messageRepository = messageRepository;
             _levelRoleRepository = levelRoleRepository;
             _channelRepository = channelRepository;
+            _factRepository = factRepository;
         }
         
         public async Task SelfAssignRoles(DiscordClient client, ulong guildId)
@@ -163,15 +166,15 @@ namespace MacintoshBot.ClientHandler
         {
             
             var jsonFact = new WebClient().DownloadString("https://uselessfacts.jsph.pl/today.json?language=en");
-            var fact = JsonConvert.DeserializeObject<DailyFact>(jsonFact);
-            
-            var factEmbed = new DiscordEmbedBuilder
+            var factText = JsonConvert.DeserializeObject<DailyFactJson>(jsonFact);
+
+            var factCreate = new FactDTO
             {
-                Title = "Daily Fact!",
-                Description = fact.Text,
-                Timestamp = DateTimeOffset.Now
+                Text = factText?.Text
             };
-            await channel.SendMessageAsync(embed: factEmbed);
+            var fact = await _factRepository.Create(factCreate);
+
+            await CreateFactMessage(client, fact, channel);
         }
 
         public async Task<DiscordMessageBuilder> GetReactionMessage(DiscordClient client, ulong guildId)
@@ -219,7 +222,7 @@ namespace MacintoshBot.ClientHandler
             await RevokeOtherRoles(client, member, levelRole, guildId);
             //Grant the new roles
             await member.GrantRoleAsync(discordRole);
-
+            //Revoke the modeator role
             await member.RevokeRoleAsync(modRole);
         }
 
@@ -233,6 +236,19 @@ namespace MacintoshBot.ClientHandler
                 var discordRole = await DiscordRoleFromId(client, role.RoleId, guildId);
                 await member.RevokeRoleAsync(discordRole);
             }
+        }
+
+        public async Task CreateFactMessage(DiscordClient client, FactDTO fact, DiscordChannel channel)
+        {
+            var factEmbed = new DiscordEmbedBuilder
+            {
+                Title = $"Daily Fact #{fact.Id}!",
+                Description = fact.Text,
+                Timestamp = DateTimeOffset.Now
+            };
+            var message = await channel.SendMessageAsync(embed: factEmbed);
+            
+            await message.CreateReactionAsync(DiscordEmoji.FromName(client, ":gift:"));
         }
     }
 }

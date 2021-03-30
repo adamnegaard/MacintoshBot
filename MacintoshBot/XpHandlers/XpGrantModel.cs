@@ -9,12 +9,12 @@ namespace MacintoshBot
 {
     public class XpGrantModel : IXpGrantModel
     {
-        private readonly IUserRepository _repository;
+        private readonly IUserRepository _userRepository;
         private HashSet<(ulong memberId,ulong guildId, DateTime time)> voiceTimeSet;
 
-        public XpGrantModel(IUserRepository repository)
+        public XpGrantModel(IUserRepository userRepository)
         {
-            _repository = repository;
+            _userRepository = userRepository;
             voiceTimeSet = new HashSet<(ulong memberId, ulong guildId, DateTime time)>();
         }
 
@@ -32,12 +32,30 @@ namespace MacintoshBot
                 //Exception should be thrown here
                 return 0;
             }
-            var timeInChat = (DateTime.Now - member.time).Minutes * 5;
-            var newXp = await _repository.AddXp(memberId, guildId, timeInChat);
+
+            var newXp = await GetNewXpFromStartTime(member.time, memberId, guildId); 
             
             //Remove the user from the set timing it
             voiceTimeSet.Remove(member);
             return newXp;
+        }
+
+        public async Task<int> GetNewXpFromStartTime(DateTime startTime, ulong memberId, ulong guildId)
+        {
+            var now = DateTime.Now;
+            if (startTime > now)
+            {
+                var member = await _userRepository.Get(memberId, guildId);
+                if (member == null)
+                {
+                    return 0;
+                }
+
+                return member.Xp;
+            }
+
+            var timeInChat = (now - startTime).TotalMinutes * 5;
+            return await _userRepository.AddXp(memberId, guildId, Convert.ToInt32(timeInChat));
         }
     }
 }
