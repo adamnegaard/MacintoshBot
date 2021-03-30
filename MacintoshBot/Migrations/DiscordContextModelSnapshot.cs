@@ -18,7 +18,7 @@ namespace MacintoshBot.Migrations
                 .HasAnnotation("ProductVersion", "5.0.3")
                 .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn);
 
-            modelBuilder.Entity("MacintoshBot.Entities.Channels", b =>
+            modelBuilder.Entity("MacintoshBot.Entities.Channel", b =>
                 {
                     b.Property<string>("RefName")
                         .HasColumnType("text");
@@ -85,7 +85,7 @@ namespace MacintoshBot.Migrations
                     b.Property<decimal>("GuildId")
                         .HasColumnType("numeric(20,0)");
 
-                    b.Property<decimal>("DiscordId")
+                    b.Property<decimal>("MessageId")
                         .HasColumnType("numeric(20,0)");
 
                     b.HasKey("RefName", "GuildId");
@@ -101,11 +101,11 @@ namespace MacintoshBot.Migrations
                     b.Property<decimal>("GuildId")
                         .HasColumnType("numeric(20,0)");
 
-                    b.Property<decimal>("DiscordRoleId")
-                        .HasColumnType("numeric(20,0)");
-
                     b.Property<int>("Rank")
                         .HasColumnType("integer");
+
+                    b.Property<decimal>("RoleId")
+                        .HasColumnType("numeric(20,0)");
 
                     b.HasKey("RefName", "GuildId");
 

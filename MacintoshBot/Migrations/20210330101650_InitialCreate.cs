@@ -7,6 +7,19 @@ namespace MacintoshBot.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "Channels",
+                columns: table => new
+                {
+                    RefName = table.Column<string>(type: "text", nullable: false),
+                    GuildId = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
+                    ChannelId = table.Column<decimal>(type: "numeric(20,0)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Channels", x => new { x.RefName, x.GuildId });
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Groups",
                 columns: table => new
                 {
@@ -41,7 +54,7 @@ namespace MacintoshBot.Migrations
                 {
                     RefName = table.Column<string>(type: "text", nullable: false),
                     GuildId = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
-                    DiscordRoleId = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
+                    RoleId = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
                     Rank = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
@@ -66,18 +79,21 @@ namespace MacintoshBot.Migrations
                 name: "Messages",
                 columns: table => new
                 {
-                    DiscordId = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
+                    RefName = table.Column<string>(type: "text", nullable: false),
                     GuildId = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
-                    RefName = table.Column<string>(type: "text", nullable: false)
+                    MessageId = table.Column<decimal>(type: "numeric(20,0)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Messages", x => new { x.DiscordId, x.GuildId });
+                    table.PrimaryKey("PK_Messages", x => new { x.RefName, x.GuildId });
                 });
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "Channels");
+
             migrationBuilder.DropTable(
                 name: "Groups");
 

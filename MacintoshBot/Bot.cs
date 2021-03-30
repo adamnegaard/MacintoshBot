@@ -6,6 +6,7 @@ using DSharpPlus.CommandsNext;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
 using MacintoshBot.Commands;
+using MacintoshBot.Models.Channel;
 using MacintoshBot.Models.Group;
 using MacintoshBot.Models.Message;
 using MacintoshBot.Models.Role;
@@ -23,11 +24,12 @@ namespace MacintoshBot
         private readonly IGroupRepository _groupRepository;
         private readonly IMessageRepository _messageRepository;
         private readonly ILevelRoleRepository _levelRoleRepository;
+        private readonly IChannelRepository _channelRepository;
         private readonly IXpGrantModel _xpGrantModel;
         private readonly IClientHandler _clientHandler;
 
         public Bot(IServiceProvider services, DiscordClient client, IUserRepository userRepository, IGroupRepository groupRepository, 
-            IMessageRepository messageRepository, ILevelRoleRepository levelRoleRepository, IXpGrantModel xpGrantModel, IClientHandler clientHandler)
+            IMessageRepository messageRepository, ILevelRoleRepository levelRoleRepository, IChannelRepository channelRepository, IXpGrantModel xpGrantModel, IClientHandler clientHandler)
         {
             _services = services;
             _client = client;
@@ -35,6 +37,7 @@ namespace MacintoshBot
             _groupRepository = groupRepository;
             _messageRepository = messageRepository;
             _levelRoleRepository = levelRoleRepository;
+            _channelRepository = channelRepository;
             _xpGrantModel = xpGrantModel;
             _clientHandler = clientHandler;
             

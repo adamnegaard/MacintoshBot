@@ -11,7 +11,7 @@ namespace MacintoshBot.Entities
         DbSet<Group> Groups { get; set; }
         DbSet<Message> Messages { get; set; }
         DbSet<Role> LevelRoles { get; set; }
-        DbSet<Channels> Channels { get; set; }
+        DbSet<Channel> Channels { get; set; }
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     }
 }

@@ -2,11 +2,11 @@
 
 namespace MacintoshBot.Entities
 {
-    public class Channels
+    public class Channel
     {
-        public ulong ChannelId { get; set; }
+        public string RefName { get; set; }
         public ulong GuildId { get; set; }
         [Required]
-        public string RefName { get; set; }
+        public ulong ChannelId { get; set; }
     }
 }

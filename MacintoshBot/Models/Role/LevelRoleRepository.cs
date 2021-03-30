@@ -23,7 +23,7 @@ namespace MacintoshBot.Models.Role
             {
                 RefName = role.RefName,
                 GuildId = role.GuildId,
-                DiscordRoleId = role.DiscordRoleId,
+                RoleId = role.RoleId,
                 Rank = role.Rank,
             };
             await _context.LevelRoles.AddAsync(roleCreate);
@@ -42,14 +42,14 @@ namespace MacintoshBot.Models.Role
             {
                 RefName = role.RefName,
                 GuildId = role.GuildId,
-                DiscordRoleId = role.DiscordRoleId,
+                RoleId = role.RoleId,
                 Rank = role.Rank
             };
         }
 
         public async Task<RoleDTO> Get(ulong roleId, ulong guildId)
         {
-            var role = await _context.LevelRoles.FirstOrDefaultAsync(r => r.DiscordRoleId == roleId && r.GuildId == guildId);
+            var role = await _context.LevelRoles.FirstOrDefaultAsync(r => r.RoleId == roleId && r.GuildId == guildId);
             if (role == null)
             {
                 return null;
@@ -59,7 +59,7 @@ namespace MacintoshBot.Models.Role
             {
                 RefName = role.RefName,
                 GuildId = role.GuildId,
-                DiscordRoleId = role.DiscordRoleId,
+                RoleId = role.RoleId,
                 Rank = role.Rank
             };
         }
@@ -80,7 +80,7 @@ namespace MacintoshBot.Models.Role
             {
                 RefName = role.RefName,
                 GuildId = role.GuildId,
-                DiscordRoleId = role.DiscordRoleId,
+                RoleId = role.RoleId,
                 Rank = role.Rank
             };
         }
@@ -99,7 +99,7 @@ namespace MacintoshBot.Models.Role
             {
                 RefName = role.RefName,
                 GuildId = role.GuildId,
-                DiscordRoleId = role.DiscordRoleId,
+                RoleId = role.RoleId,
                 Rank = role.Rank
             };
         }
@@ -123,7 +123,7 @@ namespace MacintoshBot.Models.Role
         {
             return await _context.LevelRoles.Where(lr => lr.GuildId == guildId).Select(r => new RoleDTO
             {
-                DiscordRoleId = r.DiscordRoleId,
+                RoleId = r.RoleId,
                 GuildId = r.GuildId,
                 RefName = r.RefName,
                 Rank = r.Rank
@@ -132,7 +132,7 @@ namespace MacintoshBot.Models.Role
 
         public async Task<RoleDTO> GetLevelFromDiscordMember(DiscordMember member, ulong guildId)
         {
-            var role = (await GetAllLevel(guildId)).FirstOrDefault(r => member.Roles.Select(mr => mr.Id).Contains(r.DiscordRoleId));
+            var role = (await GetAllLevel(guildId)).FirstOrDefault(r => member.Roles.Select(mr => mr.Id).Contains(r.RoleId));
             if (role == null)
             {
                 return null;

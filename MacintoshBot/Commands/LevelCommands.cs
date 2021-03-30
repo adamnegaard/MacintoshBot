@@ -55,7 +55,7 @@ namespace MacintoshBot.Commands
             var levelRole = await _levelRoleRepository.GetLevelFromDiscordMember(member, guildId);
             if (levelRole != null)
             {
-                var discordRole = await _clientHandler.DiscordRoleFromId(ctx.Client, levelRole.DiscordRoleId, guildId);
+                var discordRole = await _clientHandler.DiscordRoleFromId(ctx.Client, levelRole.RoleId, guildId);
                 levelEmbed.AddField("Role", discordRole.Name);   
             }
             //Send the embed to the channel.

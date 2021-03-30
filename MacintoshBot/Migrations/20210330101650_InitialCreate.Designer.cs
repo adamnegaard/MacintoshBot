@@ -9,7 +9,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MacintoshBot.Migrations
 {
     [DbContext(typeof(DiscordContext))]
-    [Migration("20210329174214_InitialCreate")]
+    [Migration("20210330101650_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -19,6 +19,22 @@ namespace MacintoshBot.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63)
                 .HasAnnotation("ProductVersion", "5.0.3")
                 .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn);
+
+            modelBuilder.Entity("MacintoshBot.Entities.Channel", b =>
+                {
+                    b.Property<string>("RefName")
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("GuildId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<decimal>("ChannelId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.HasKey("RefName", "GuildId");
+
+                    b.ToTable("Channels");
+                });
 
             modelBuilder.Entity("MacintoshBot.Entities.Group", b =>
                 {
@@ -65,17 +81,16 @@ namespace MacintoshBot.Migrations
 
             modelBuilder.Entity("MacintoshBot.Entities.Message", b =>
                 {
-                    b.Property<decimal>("DiscordId")
-                        .HasColumnType("numeric(20,0)");
+                    b.Property<string>("RefName")
+                        .HasColumnType("text");
 
                     b.Property<decimal>("GuildId")
                         .HasColumnType("numeric(20,0)");
 
-                    b.Property<string>("RefName")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<decimal>("MessageId")
+                        .HasColumnType("numeric(20,0)");
 
-                    b.HasKey("DiscordId", "GuildId");
+                    b.HasKey("RefName", "GuildId");
 
                     b.ToTable("Messages");
                 });
@@ -88,11 +103,11 @@ namespace MacintoshBot.Migrations
                     b.Property<decimal>("GuildId")
                         .HasColumnType("numeric(20,0)");
 
-                    b.Property<decimal>("DiscordRoleId")
-                        .HasColumnType("numeric(20,0)");
-
                     b.Property<int>("Rank")
                         .HasColumnType("integer");
+
+                    b.Property<decimal>("RoleId")
+                        .HasColumnType("numeric(20,0)");
 
                     b.HasKey("RefName", "GuildId");
 

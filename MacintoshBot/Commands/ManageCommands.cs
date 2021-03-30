@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -7,12 +6,10 @@ using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
-using MacintoshBot.Entities;
+using MacintoshBot.Models.Channel;
 using MacintoshBot.Models.Group;
 using MacintoshBot.Models.Message;
 using MacintoshBot.Models.Role;
-using MacintoshBot.Models.User;
-using MacintoshBot.ServerConstants;
 
 namespace MacintoshBot.Commands
 {
@@ -25,12 +22,14 @@ namespace MacintoshBot.Commands
         private readonly IGroupRepository _groupRepository;
         private readonly IMessageRepository _messageRepository;
         private readonly ILevelRoleRepository _levelRoleRepository;
-        public ManageCommands(IClientHandler clientHandler, IGroupRepository groupRepository, IMessageRepository messageRepository, ILevelRoleRepository levelRoleRepository)
+        private readonly IChannelRepository _channelRepository;
+        public ManageCommands(IClientHandler clientHandler, IGroupRepository groupRepository, IMessageRepository messageRepository, ILevelRoleRepository levelRoleRepository, IChannelRepository channelRepository)
         {
             _clientHandler = clientHandler;
             _groupRepository = groupRepository;
             _messageRepository = messageRepository;
             _levelRoleRepository = levelRoleRepository;
+            _channelRepository = channelRepository;
         }
         
         [Command("MakeMod")]
@@ -198,7 +197,8 @@ namespace MacintoshBot.Commands
                 return;
             }
             //Find the role channel so the bot can mention it
-            var rolesChannel = ctx.Guild.Channels.Values.FirstOrDefault(c => c.Id == (ulong) Channel.RoleChannel);
+            var roleChannelId = await _channelRepository.Get("role", guildId);
+            var rolesChannel = ctx.Guild.Channels.Values.FirstOrDefault(c => c.Id == roleChannelId);
             if (rolesChannel == null)
             {
                 await message.ModifyAsync("Could not find the roles channel where users react");
@@ -330,7 +330,8 @@ namespace MacintoshBot.Commands
         {
             var guildId = ctx.Guild.Id;
             //Get the "roles" channel
-            var roleChannel = ctx.Guild.Channels.Values.FirstOrDefault(channel => channel.Id == (ulong) Channel.RoleChannel);
+            var roleChannelId = await _channelRepository.Get("role", guildId);
+            var roleChannel = ctx.Guild.Channels.Values.FirstOrDefault(channel => channel.Id == roleChannelId);
             if (roleChannel == null)
             {
                 return "Could not find the `roles` channel";
@@ -353,7 +354,8 @@ namespace MacintoshBot.Commands
         {
             var guildId = ctx.Guild.Id;
             //Get the "roles" channel
-            var roleChannel = ctx.Guild.Channels.Values.FirstOrDefault(channel => channel.Id == (ulong) Channel.RoleChannel);
+            var roleChannelId = await _channelRepository.Get("role", guildId);
+            var roleChannel = ctx.Guild.Channels.Values.FirstOrDefault(channel => channel.Id == roleChannelId);
             if (roleChannel == null)
             {
                 return "Could not find the `roles` channel";

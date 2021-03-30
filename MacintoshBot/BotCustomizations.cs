@@ -5,7 +5,6 @@ using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
 using MacintoshBot.Models.Message;
-using MacintoshBot.ServerConstants;
 
 
 namespace MacintoshBot
@@ -78,7 +77,7 @@ namespace MacintoshBot
                 return;
             }
 
-            var discordRole = await _clientHandler.DiscordRoleFromId(_client, lowestRank.DiscordRoleId, guildId);
+            var discordRole = await _clientHandler.DiscordRoleFromId(_client, lowestRank.RoleId, guildId);
             await member.GrantRoleAsync(discordRole);
         }
         
@@ -95,7 +94,8 @@ namespace MacintoshBot
         {
             var message = RandomMemberLeaveMessage(member.DisplayName);
             var server = _client.Guilds.Values.FirstOrDefault(g => g.Id == guildId);
-            var welcomeChannel = server?.Channels.Values.FirstOrDefault(c => c.Id == (ulong) Channel.NewMembers);
+            var newMemberChannelId = await _channelRepository.Get("newmembers", guildId);
+            var welcomeChannel = server?.Channels.Values.FirstOrDefault(c => c.Id == newMemberChannelId);
             await welcomeChannel.SendMessageAsync(message); 
         }
         
@@ -108,7 +108,7 @@ namespace MacintoshBot
                 var newAssignMessage = await _clientHandler.SendSelfAssignMessage(client, guildId);
                 var roleMessage = new MessageDTO
                 {
-                    DiscordId = newAssignMessage.Id,
+                    MessageId = newAssignMessage.Id,
                     GuildId = guildId,
                     RefName = "role"
                 };

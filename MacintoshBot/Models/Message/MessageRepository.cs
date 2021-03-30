@@ -17,14 +17,14 @@ namespace MacintoshBot.Models.Message
         public async Task<ulong> Get(string refName, ulong guildId)
         {
             var message = await _context.Messages.FirstOrDefaultAsync(m => m.RefName.ToLower().Equals(refName.ToLower()) && m.GuildId == guildId);
-            return message?.DiscordId ?? 0;
+            return message?.MessageId ?? 0;
         }
 
         public async Task Create(MessageDTO message)
         {
             var messageCreate = new Entities.Message
             {
-                DiscordId = message.DiscordId,
+                MessageId = message.MessageId,
                 GuildId = message.GuildId,
                 RefName = message.RefName,
             };

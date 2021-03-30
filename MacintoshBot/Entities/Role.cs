@@ -8,7 +8,7 @@ namespace MacintoshBot.Entities
         public string RefName { get; set; }
         public ulong GuildId { get; set; }
         [Required]
-        public ulong DiscordRoleId { get; set; }
+        public ulong RoleId { get; set; }
         [Required]
         public int Rank { get; set; }
         

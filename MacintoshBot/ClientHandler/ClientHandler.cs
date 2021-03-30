@@ -9,7 +9,6 @@ using MacintoshBot.Models.Group;
 using MacintoshBot.Models.Message;
 using MacintoshBot.Models.Role;
 using MacintoshBot.Models.User;
-using MacintoshBot.ServerConstants;
 using Newtonsoft.Json;
 
 namespace MacintoshBot.ClientHandler
@@ -41,7 +40,8 @@ namespace MacintoshBot.ClientHandler
             }
             
             //Get the "roles" channel
-            var roleChannel = server.Channels.Values.FirstOrDefault(channel => channel.Id == (ulong) Channel.RoleChannel);
+            var roleChannelId = await _channelRepository.Get("role", guildId);
+            var roleChannel = server.Channels.Values.FirstOrDefault(channel => channel.Id == roleChannelId);
             if (roleChannel == null)
             {
                 await Console.Error.WriteLineAsync("Could not find the roles channel");
@@ -74,7 +74,8 @@ namespace MacintoshBot.ClientHandler
             }
             
             //Get the "roles" channel
-            var roleChannel = server.Channels.Values.FirstOrDefault(channel => channel.Id == (ulong) Channel.RoleChannel);
+            var roleChannelId = await _channelRepository.Get("role", guildId);
+            var roleChannel = server.Channels.Values.FirstOrDefault(channel => channel.Id == roleChannelId);
             if (roleChannel == null)
             {
                 await Console.Error.WriteLineAsync("Could not find the roles channel");
@@ -125,9 +126,9 @@ namespace MacintoshBot.ClientHandler
                     //check if it's a new role (but since it might be an old role, we need to check if it's an upgrade and not a downgrade
                     var upgradeFromCurrRole = await _levelRoleRepository.GetLevelNext(levelRole.Rank, guildId);
                     //Do also a null check
-                    if (levelRole.DiscordRoleId != nextMemberRole.DiscordRoleId && upgradeFromCurrRole != null && nextMemberRole.DiscordRoleId == upgradeFromCurrRole.DiscordRoleId)
+                    if (levelRole.RoleId != nextMemberRole.RoleId && upgradeFromCurrRole != null && nextMemberRole.RoleId == upgradeFromCurrRole.RoleId)
                     {
-                        var role = await DiscordRoleFromId(client, nextMemberRole.DiscordRoleId, guildId);
+                        var role = await DiscordRoleFromId(client, nextMemberRole.RoleId, guildId);
                         if (role == null)
                         {
                             return 0;
@@ -195,7 +196,7 @@ namespace MacintoshBot.ClientHandler
                 
             }
 
-            var discordRole = await DiscordRoleFromId(client, proRole.DiscordRoleId, guildId);
+            var discordRole = await DiscordRoleFromId(client, proRole.RoleId, guildId);
             
             //remove the old roles
             await RevokeOtherRoles(client, member, proRole, guildId);
@@ -213,7 +214,7 @@ namespace MacintoshBot.ClientHandler
                 return;
             }
             
-            var discordRole = await DiscordRoleFromId(client, levelRole.DiscordRoleId, guildId);
+            var discordRole = await DiscordRoleFromId(client, levelRole.RoleId, guildId);
             //remove the old roles
             await RevokeOtherRoles(client, member, levelRole, guildId);
             //Grant the new roles
@@ -229,7 +230,7 @@ namespace MacintoshBot.ClientHandler
             //revoke the other roles
             foreach (var role in rolesAbove.Concat(rolesBelow))
             {
-                var discordRole = await DiscordRoleFromId(client, role.DiscordRoleId, guildId);
+                var discordRole = await DiscordRoleFromId(client, role.RoleId, guildId);
                 await member.RevokeRoleAsync(discordRole);
             }
         }
