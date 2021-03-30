@@ -1,5 +1,6 @@
 # Macintosh-Bot
 <img src="bot_logo.png" width="200" height="200">
+
 ## Setup
 
 The bot uses [PostgreSQL](https://www.postgresql.org/).
