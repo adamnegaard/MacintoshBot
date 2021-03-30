@@ -4,7 +4,6 @@ using MacintoshBot.Entities;
 using MacintoshBot.Models.User;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Sqlite.Query.Internal;
 using Xunit;
 
 namespace MacintoshBot.Tests
