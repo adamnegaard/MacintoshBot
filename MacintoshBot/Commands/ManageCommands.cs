@@ -86,10 +86,10 @@ namespace MacintoshBot.Commands
             if (!role.Name.ToLower().Contains("moderator"))
             {
                 var levelRole = await _levelRoleRepository.Get(role.Id, guildId);
-                if (levelRole != null)
+                if (levelRole.status == Status.Found)
                 {
                     //If it's a levelrole, remove their other roles
-                    await _clientHandler.RevokeOtherRoles(ctx.Client, member, levelRole, guildId);   
+                    await _clientHandler.RevokeOtherRoles(ctx.Client, member, levelRole.role, guildId);   
                 }
                 //Grant the role to the user
                 await member.GrantRoleAsync(role);
@@ -169,8 +169,8 @@ namespace MacintoshBot.Commands
                 DiscordRoleId = role.Id,
             };
             //Insert into the database
-            var status = await _groupRepository.Create(group);
-            if (status != Status.Created)
+            var createdGroup = await _groupRepository.Create(group);
+            if (createdGroup.status != Status.Created)
             {
                 await message.ModifyAsync("Error on inserting into database");
                 return;
@@ -199,13 +199,13 @@ namespace MacintoshBot.Commands
                 return;
             }
             //Find the role channel so the bot can mention it
-            var roleChannelDTO = await _channelRepository.Get("role", guildId);
-            if (roleChannelDTO == null)
+            var roleChannel = await _channelRepository.Get("role", guildId);
+            if (roleChannel.status != Status.Found)
             {
                 await message.ModifyAsync("Could not find the roles channel in the database");
                 return;
             }
-            var rolesChannel = ctx.Guild.Channels.Values.FirstOrDefault(c => c.Id == roleChannelDTO.ChannelId);
+            var rolesChannel = ctx.Guild.Channels.Values.FirstOrDefault(c => c.Id == roleChannel.channel.ChannelId);
             if (rolesChannel == null)
             {
                 await message.ModifyAsync("Could not find the roles channel");
@@ -225,20 +225,20 @@ namespace MacintoshBot.Commands
             var message = await ctx.Channel.SendMessageAsync("Working on it...");
             //Get the group
             var group = await _groupRepository.Get(name, guildId);
-            if (group == null)
+            if (group.status != Status.Found)
             {
                 await message.ModifyAsync($"Could not find {name} in the database. Have you tried running ?groups");
                 return;
             }
             //Get the role
-            var role = ctx.Guild.Roles.Values.FirstOrDefault(r => r.Id == group.DiscordRoleId);
+            var role = ctx.Guild.Roles.Values.FirstOrDefault(r => r.Id == group.group.DiscordRoleId);
             if (role == null)
             {
-                await message.ModifyAsync($"Could not find the role matching the group abbreviation: {group.Name}");
+                await message.ModifyAsync($"Could not find the role matching the group abbreviation: {group.group.Name}");
                 return;
             }
             //Get the channel
-            var channel = ctx.Guild.Channels.Values.FirstOrDefault(c => c.Name.ToLower().Contains(group.Name.ToLower()) && c.IsCategory);
+            var channel = ctx.Guild.Channels.Values.FirstOrDefault(c => c.Name.ToLower().Contains(group.group.Name.ToLower()) && c.IsCategory);
             if (channel == null)
             {
                 await message.ModifyAsync($"Could not find the channel for {name}");
@@ -257,11 +257,11 @@ namespace MacintoshBot.Commands
             var status = await _groupRepository.Delete(name, guildId);
             if (status != Status.Deleted)
             {
-                await message.ModifyAsync($"Some error occured, did not remove {group.Name} from the database");
+                await message.ModifyAsync($"Some error occured, did not remove {group.group.Name} from the database");
                 return;
             }
             //Remove the part of the reaction message that is valid for this role
-            var errorMessage = await RemoveEmojiReactions(ctx, group);
+            var errorMessage = await RemoveEmojiReactions(ctx, group.group);
             if (errorMessage != null)
             {
                 await message.ModifyAsync(errorMessage);
@@ -338,25 +338,30 @@ namespace MacintoshBot.Commands
         {
             var guildId = ctx.Guild.Id;
             //Get the "roles" channel
-            var roleChannelDTO = await _channelRepository.Get("role", guildId);
-            if (roleChannelDTO == null)
+            var roleChannel = await _channelRepository.Get("role", guildId);
+            if (roleChannel.status != Status.Found)
             {
                 return "Could not find the `roles` channel in the database";
             }
-            var roleChannel = ctx.Guild.Channels.Values.FirstOrDefault(channel => channel.Id == roleChannelDTO.ChannelId);
-            if (roleChannel == null)
+            var roleDiscordChannel = ctx.Guild.Channels.Values.FirstOrDefault(channel => channel.Id == roleChannel.channel.ChannelId);
+            if (roleDiscordChannel == null)
             {
                 return "Could not find the `roles` channel";
             }
             //Get the specific reaction message
-            var assignMessage = await roleChannel.GetMessageAsync(await _messageRepository.Get("role", guildId));
+            var message = await _messageRepository.GetMessageId("role", guildId);
+            if (message.status != Status.Found)
+            {
+                return "Could not find the `roles` message in the database";
+            }
+            var assignMessage = await roleDiscordChannel.GetMessageAsync(message.messageId);
             if (assignMessage == null)
             {
                 return "Could not find the role assignment message";
             }
             //Modify the message with the newly added role / group
-            var message = await _clientHandler.GetReactionMessage(ctx.Client, guildId);
-            await assignMessage.ModifyAsync(message);
+            var discordMessage = await _clientHandler.GetReactionMessage(ctx.Client, guildId);
+            await assignMessage.ModifyAsync(discordMessage);
             //React to it so users can find it easily'
             await assignMessage.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client, group.EmojiName));
             return null;
@@ -366,25 +371,30 @@ namespace MacintoshBot.Commands
         {
             var guildId = ctx.Guild.Id;
             //Get the "roles" channel
-            var roleChannelDTO = await _channelRepository.Get("role", guildId);
-            if (roleChannelDTO == null)
+            var roleChannel = await _channelRepository.Get("role", guildId);
+            if (roleChannel.status != Status.Found)
             {
                 return "Could not find the `roles` channel in the database";
             }
-            var roleChannel = ctx.Guild.Channels.Values.FirstOrDefault(channel => channel.Id == roleChannelDTO.ChannelId);
-            if (roleChannel == null)
+            var roleDiscordChannel = ctx.Guild.Channels.Values.FirstOrDefault(channel => channel.Id == roleChannel.channel.ChannelId);
+            if (roleDiscordChannel == null)
             {
                 return "Could not find the `roles` channel";
             }
             //Get the specific reaction message
-            var assignMessage = await roleChannel.GetMessageAsync(await _messageRepository.Get("role", guildId));
+            var message = await _messageRepository.GetMessageId("role", guildId);
+            if (message.status != Status.Found)
+            {
+                return "Could not find the `roles` message in the database";
+            }
+            var assignMessage = await roleDiscordChannel.GetMessageAsync(message.messageId);
             if (assignMessage == null)
             {
                 return "Could not find the role assignment message";
             }
             //Modify the message with the newly added role / group
-            var message = await _clientHandler.GetReactionMessage(ctx.Client, guildId);
-            await assignMessage.ModifyAsync(message);
+            var discordMessage = await _clientHandler.GetReactionMessage(ctx.Client, guildId);
+            await assignMessage.ModifyAsync(discordMessage);
 
             //Remove that reaction
             await assignMessage.DeleteReactionsEmojiAsync(DiscordEmoji.FromName(ctx.Client, group.EmojiName));

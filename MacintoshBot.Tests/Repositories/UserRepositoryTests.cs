@@ -6,7 +6,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 
-namespace MacintoshBot.Tests
+namespace MacintoshBot.Tests.Repositories
 {
     public class UserRepositoryTests
     {
@@ -43,22 +43,24 @@ namespace MacintoshBot.Tests
         [Fact]
         public async void CreateExistingUser()
         {
-            var actual = await _userRepository.Create(1,1);
-            Assert.Equal(Status.Conflict, actual);
+            var user = await _userRepository.Create(1,1);
+            Assert.Equal(Status.Conflict, user.status);
+            Assert.Equal(1u, user.user.UserId);
+            Assert.Equal(598, user.user.Xp);
         }
         
         [Fact]
         public async void CreateNonExistingUserDifferentGuild()
         {
-            var actual = await _userRepository.Create(1,3);
-            Assert.Equal(Status.Created, actual);
+            var user = await _userRepository.Create(1,3);
+            Assert.Equal(Status.Created, user.status);
         }
         
         [Fact]
         public async void CreateNonExistingUserSameGuild()
         {
-            var actual = await _userRepository.Create(42,1);
-            Assert.Equal(Status.Created, actual);
+            var user = await _userRepository.Create(42,1);
+            Assert.Equal(Status.Created, user.status);
         }
         
         [Fact]
@@ -78,7 +80,10 @@ namespace MacintoshBot.Tests
         [Fact]
         public async void GetExistingUser()
         {
-            var user = await _userRepository.Get(1, 1);
+            var result = await _userRepository.Get(1, 1);
+            Assert.Equal(Status.Found, result.status);
+            var user = result.user; 
+            
             Assert.Equal(1u, user.UserId);
             Assert.Equal(1u, user.GuildId);
             Assert.Equal(598, user.Xp);
@@ -89,7 +94,7 @@ namespace MacintoshBot.Tests
         public async void GetNonExistingUser()
         {
             var user = await _userRepository.Get(42, 1);
-            Assert.Null(user);
+            Assert.Equal(Status.BadRequest,user.status);
         }
         
         [Fact]

@@ -2,12 +2,11 @@ using System.Linq;
 using MacintoshBot.Entities;
 using MacintoshBot.Models;
 using MacintoshBot.Models.Group;
-using MacintoshBot.Models.User;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 
-namespace MacintoshBot.Tests
+namespace MacintoshBot.Tests.Repositories
 {
     public class GroupRepositoryTests
     {
@@ -40,28 +39,33 @@ namespace MacintoshBot.Tests
         [Fact]
         public async void roleIdOnExisting()
         {
-            var roleId = await _groupRepository.GetRoleIdFromEmoji(":wow:", 1);
-            Assert.Equal(3u, roleId);
+            var response = await _groupRepository.GetRoleIdFromEmoji(":wow:", 1);
+            Assert.Equal(Status.Found, response.status);
+            Assert.Equal(3u, response.roleId);
         }
         
         [Fact]
         public async void roleIdOnNonExistingEmoji()
         {
-            var roleId = await _groupRepository.GetRoleIdFromEmoji(":shouldFaild:", 1);
-            Assert.Equal(0u, roleId);
+            var response = await _groupRepository.GetRoleIdFromEmoji(":shouldfail:", 1);
+            Assert.Equal(Status.BadRequest, response.status);
+            Assert.Equal(0u, response.roleId);
         }
         
         [Fact]
         public async void roleIdOnNonExistingGuild()
         {
-            var roleId = await _groupRepository.GetRoleIdFromEmoji(":wow:", 42);
-            Assert.Equal(0u, roleId);
+            var response = await _groupRepository.GetRoleIdFromEmoji(":wow:", 42);
+            Assert.Equal(Status.BadRequest, response.status);
+            Assert.Equal(0u, response.roleId);
         }
 
         [Fact]
         public async void GetOnExisting()
         {
-            var group = await _groupRepository.Get("WoW", 1);
+            var response = await _groupRepository.Get("WoW", 1);
+            Assert.Equal(Status.Found, response.status);
+            var group = response.group;
             Assert.Equal("WoW", group.Name);
             Assert.Equal(1u, group.GuildId);
             Assert.Equal("World of Warcraft", group.FullName);
@@ -73,15 +77,17 @@ namespace MacintoshBot.Tests
         [Fact]
         public async void GetOnNonExistingName()
         {
-            var group = await _groupRepository.Get("test", 1);
-            Assert.Null(group);
+            var response = await _groupRepository.Get("test", 1);
+            Assert.Equal(Status.BadRequest, response.status);
+            Assert.Null(response.group);
         }
         
         [Fact]
         public async void GetOnNonExistingGuild()
         {
-            var group = await _groupRepository.Get("Wow", 42);
-            Assert.Null(group);
+            var response = await _groupRepository.Get("Wow", 42);
+            Assert.Equal(Status.BadRequest, response.status);
+            Assert.Null(response.group);
         }
         
         [Fact]
@@ -96,8 +102,10 @@ namespace MacintoshBot.Tests
                 EmojiName = ":wow:",
                 DiscordRoleId = 4,
             };
-            var status = await _groupRepository.Create(groupDTO);
-            Assert.Equal(Status.Conflict, status);
+            var group = await _groupRepository.Create(groupDTO);
+            Assert.Equal(Status.Conflict, group.status);
+            Assert.Equal("WoW", group.group.Name);
+            Assert.Equal(3u, group.group.DiscordRoleId);
         }
         
         [Fact]
@@ -112,8 +120,8 @@ namespace MacintoshBot.Tests
                 EmojiName = ":wow:",
                 DiscordRoleId = 4,
             };
-            var status = await _groupRepository.Create(groupDTO);
-            Assert.Equal(Status.Created, status);
+            var group = await _groupRepository.Create(groupDTO);
+            Assert.Equal(Status.Created, group.status);
         }
         
         [Fact]
@@ -128,8 +136,8 @@ namespace MacintoshBot.Tests
                 EmojiName = ":wow:",
                 DiscordRoleId = 4,
             };
-            var status = await _groupRepository.Create(groupDTO);
-            Assert.Equal(Status.Created, status);
+            var group = await _groupRepository.Create(groupDTO);
+            Assert.Equal(Status.Created, group.status);
         }
         
         [Fact]
@@ -144,8 +152,8 @@ namespace MacintoshBot.Tests
                 EmojiName = ":test:",
                 DiscordRoleId = 5,
             };
-            var status = await _groupRepository.Create(groupDTO);
-            Assert.Equal(Status.Created, status);
+            var group = await _groupRepository.Create(groupDTO);
+            Assert.Equal(Status.Created, group.status);
         }
 
         [Fact]

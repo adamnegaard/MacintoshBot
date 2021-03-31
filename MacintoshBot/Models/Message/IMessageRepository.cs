@@ -4,7 +4,7 @@ namespace MacintoshBot.Models.Message
 {
     public interface IMessageRepository
     {
-        Task<ulong> Get(string refName, ulong guildId);
-        Task Create(MessageDTO message);
+        Task<(Status status, ulong messageId)> GetMessageId(string refName, ulong guildId);
+        Task<(Status status, MessageDTO message)> Create(MessageDTO message);
     }
 }

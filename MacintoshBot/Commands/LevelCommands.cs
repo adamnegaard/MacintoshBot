@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
+using MacintoshBot.Models;
 using MacintoshBot.Models.Role;
 using MacintoshBot.Models.User;
 
@@ -36,7 +37,7 @@ namespace MacintoshBot.Commands
             //Get the user from the database
             var actualUser = await _userRepository.Get(member.Id, guildId);
             //If we can find the user in the database, return
-            if (actualUser == null)
+            if (actualUser.status != Status.Found)
             {
                 await ctx.Channel.SendMessageAsync($"Could not find user {member.DisplayName} in the database");
                 return;
@@ -50,12 +51,12 @@ namespace MacintoshBot.Commands
                 ImageUrl = member.AvatarUrl
             };
             //Add relevant fields
-            levelEmbed.AddField("Level", actualUser.Level.ToString());
-            levelEmbed.AddField("Xp", actualUser.Xp.ToString());
+            levelEmbed.AddField("Level", actualUser.user.Level.ToString());
+            levelEmbed.AddField("Xp", actualUser.user.Xp.ToString());
             var levelRole = await _levelRoleRepository.GetLevelFromDiscordMember(member, guildId);
-            if (levelRole != null)
+            if (levelRole.status != Status.Found)
             {
-                var discordRole = await _clientHandler.DiscordRoleFromId(ctx.Client, levelRole.RoleId, guildId);
+                var discordRole = await _clientHandler.DiscordRoleFromId(ctx.Client, levelRole.role.RoleId, guildId);
                 levelEmbed.AddField("Role", discordRole.Name);   
             }
             //Send the embed to the channel.

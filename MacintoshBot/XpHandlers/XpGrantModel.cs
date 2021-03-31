@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using MacintoshBot.Models;
 using MacintoshBot.Models.User;
 using Microsoft.CSharp.RuntimeBinder;
 
@@ -46,12 +47,12 @@ namespace MacintoshBot
             if (startTime > now)
             {
                 var member = await _userRepository.Get(memberId, guildId);
-                if (member == null)
+                if (member.status != Status.Found)
                 {
                     return 0;
                 }
 
-                return member.Xp;
+                return member.user.Xp;
             }
 
             var timeInChat = (now - startTime).TotalMinutes * 5;

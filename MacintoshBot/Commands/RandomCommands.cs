@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
+using MacintoshBot.Models;
 using MacintoshBot.Models.Facts;
 using MacintoshBot.Models.Image;
 
@@ -45,13 +46,13 @@ namespace MacintoshBot.Commands
                 Title = "Paaaawg Chaaampion",
                 Description = "A wild pawgers appeared"
             };
-            var poggers = await _imageRepository.Get("poggers", guildId);
-            if (poggers == null)
+            var poggers = await _imageRepository.GetLocation("poggers", guildId);
+            if (poggers.status != Status.Found)
             {
                 await ctx.Channel.SendMessageAsync("Could not find the poggers image");
                 return;
             }
-            imageEmbed.WithImageUrl(poggers);
+            imageEmbed.WithImageUrl(poggers.location);
             await ctx.Channel.SendMessageAsync(embed: imageEmbed);
         }
         
@@ -60,13 +61,13 @@ namespace MacintoshBot.Commands
         public async Task Fact(CommandContext ctx, [Description("Fact number")] int num = 0)
         {
             var fact = await _factRepository.Get(num);
-            if (fact == null)
+            if (fact.status != Status.Found)
             {
                 await ctx.Channel.SendMessageAsync($"Could not find the fact with Id {num}");
                 return;
             }
 
-            await _clientHandler.CreateFactMessage(ctx.Client, fact, ctx.Channel);
+            await _clientHandler.CreateFactMessage(ctx.Client, fact.fact, ctx.Channel);
         }
         
         [Command("Images")]
@@ -96,8 +97,8 @@ namespace MacintoshBot.Commands
         public async Task Show(CommandContext ctx, [Description("Name of image")] string imageTitle)
         {
             var guildId = ctx.Guild.Id;
-            var image = await _imageRepository.Get(imageTitle, guildId);
-            if (image == null)
+            var image = await _imageRepository.GetLocation(imageTitle, guildId);
+            if (image.status != Status.Found)
             {
                 await ctx.Channel.SendMessageAsync($"Could not find the image {imageTitle}, try `?images`");
                 return;
@@ -106,7 +107,7 @@ namespace MacintoshBot.Commands
             {
                 Title = imageTitle,
             };
-            imageEmbed.WithImageUrl(image);
+            imageEmbed.WithImageUrl(image.location);
             await ctx.Channel.SendMessageAsync(embed: imageEmbed);
         }
     }

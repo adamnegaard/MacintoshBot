@@ -16,14 +16,14 @@ namespace MacintoshBot.Models.Image
             _context = context;
         }
         
-        public async Task<Uri> Get(string imageTitle, ulong guildId)
+        public async Task<(Status status, Uri location)> GetLocation(string imageTitle, ulong guildId)
         {
             var image = await _context.Images.FirstOrDefaultAsync(i => i.Title.Equals(imageTitle) && i.GuildId == guildId);
             if (image == null)
             {
-                return null;
+                return (Status.BadRequest, null);
             }
-            return image.Location;
+            return (Status.Found, image.Location);
         }
 
         public async Task<IEnumerable<string>> Get(ulong guildId)

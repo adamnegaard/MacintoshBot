@@ -4,6 +4,7 @@ using System.Net;
 using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.Entities;
+using MacintoshBot.Models;
 using MacintoshBot.Models.Channel;
 using MacintoshBot.Models.Facts;
 using MacintoshBot.Models.Group;
@@ -43,22 +44,27 @@ namespace MacintoshBot.ClientHandler
             }
             
             //Get the "roles" channel
-            var roleChannelDTO = await _channelRepository.Get("role", guildId);
-            if (roleChannelDTO == null)
+            var roleChannel = await _channelRepository.Get("role", guildId);
+            if (roleChannel.status != Status.Found)
             {
                 await Console.Error.WriteLineAsync("Could not find the roles channel in the database");
                 return; 
             }
-            var roleChannel = server.Channels.Values.FirstOrDefault(channel => channel.Id == roleChannelDTO.ChannelId);
-            if (roleChannel == null)
+            var roleDiscordChannel = server.Channels.Values.FirstOrDefault(channel => channel.Id == roleChannel.channel.ChannelId);
+            if (roleDiscordChannel == null)
             {
                 await Console.Error.WriteLineAsync("Could not find the roles channel");
                 return; 
             }
             
             //Get the specific reaction message
-            var assignMessage = await roleChannel
-                .GetMessageAsync(await _messageRepository.Get("role", guildId));
+            var message = await _messageRepository.GetMessageId("role", guildId);
+            if (message.status != Status.Found)
+            {
+                await Console.Error.WriteLineAsync("Could not find the roles message in the database");
+                return; 
+            }
+            var assignMessage = await roleDiscordChannel.GetMessageAsync(message.messageId);
             if (assignMessage == null)
             {
                 await Console.Error.WriteLineAsync("Could not find the roles message");
@@ -82,14 +88,14 @@ namespace MacintoshBot.ClientHandler
             }
             
             //Get the "roles" channel
-            var roleChannelDTO = await _channelRepository.Get("role", guildId);
-            if (roleChannelDTO == null)
+            var roleChannel = await _channelRepository.Get("role", guildId);
+            if (roleChannel.status != Status.Found)
             {
                 await Console.Error.WriteLineAsync("Could not find the roles channel in the database");
                 return null;
             }
-            var roleChannel = server.Channels.Values.FirstOrDefault(channel => channel.Id == roleChannelDTO.ChannelId);
-            if (roleChannel == null)
+            var roleDiscordChannel = server.Channels.Values.FirstOrDefault(channel => channel.Id == roleChannel.channel.ChannelId);
+            if (roleDiscordChannel == null)
             {
                 await Console.Error.WriteLineAsync("Could not find the roles channel");
                 return null;
@@ -97,7 +103,7 @@ namespace MacintoshBot.ClientHandler
             //Get the reaction channel
             var messageBuilder = await GetReactionMessage(client, guildId);
 
-            return await roleChannel.SendMessageAsync(messageBuilder);
+            return await roleDiscordChannel.SendMessageAsync(messageBuilder);
         }
 
         public async Task<DiscordRole> DiscordRoleFromId(DiscordClient client, ulong roleId, ulong guildId)
@@ -134,19 +140,28 @@ namespace MacintoshBot.ClientHandler
                     var discordMember = guild.Members.FirstOrDefault(m => m.Key == member.UserId).Value;
                     
                     var levelRole = await _levelRoleRepository.GetLevelFromDiscordMember(discordMember, guildId);
+                    if (levelRole.status != Status.Found)
+                    {
+                        continue;
+                    }
                     var nextMemberRole = await _levelRoleRepository.GetLevelRoleFromTime(discordMember.JoinedAt, guildId);
+                    if (nextMemberRole.status != Status.Found)
+                    {
+                        continue;
+                    }
                     
                     //check if it's a new role (but since it might be an old role, we need to check if it's an upgrade and not a downgrade
-                    var upgradeFromCurrRole = await _levelRoleRepository.GetLevelNext(levelRole.Rank, guildId);
+                    var upgradeFromCurrRole = await _levelRoleRepository.GetLevelNext(levelRole.role.Rank, guildId);
+                    if(upgradeFromCurrRole.status != Status.Found)
                     //Do also a null check
-                    if (levelRole.RoleId != nextMemberRole.RoleId && upgradeFromCurrRole != null && nextMemberRole.RoleId == upgradeFromCurrRole.RoleId)
+                    if (levelRole.role.RoleId != nextMemberRole.role.RoleId && upgradeFromCurrRole.role != null && nextMemberRole.role.RoleId == upgradeFromCurrRole.role.RoleId)
                     {
-                        var role = await DiscordRoleFromId(client, nextMemberRole.RoleId, guildId);
+                        var role = await DiscordRoleFromId(client, nextMemberRole.role.RoleId, guildId);
                         if (role == null)
                         {
                             return 0;
                         }
-                        await RevokeOtherRoles(client, discordMember, nextMemberRole, guildId);
+                        await RevokeOtherRoles(client, discordMember, nextMemberRole.role, guildId);
                         await discordMember.GrantRoleAsync(role);
                         upgrades++;
                     }
@@ -162,17 +177,17 @@ namespace MacintoshBot.ClientHandler
 
             foreach (var guild in guilds)
             {
-                var factChannelDTO = await _channelRepository.Get("dailyfacts", guild.Id);
-                if (factChannelDTO == null)
+                var factChannel = await _channelRepository.Get("dailyfacts", guild.Id);
+                if (factChannel.status != Status.Found)
                 {
                     continue;
                 }
-                var factChannel = guild.Channels.FirstOrDefault(c => c.Key == factChannelDTO.ChannelId).Value;
-                if (factChannel == null)
+                var factDiscordChannel = guild.Channels.FirstOrDefault(c => c.Key == factChannel.channel.ChannelId).Value;
+                if (factDiscordChannel == null)
                 {
                     continue;
                 }
-                await SendDailyFact(client, factChannel);
+                await SendDailyFact(client, factDiscordChannel);
             }
         }
 
@@ -181,14 +196,16 @@ namespace MacintoshBot.ClientHandler
             
             var jsonFact = new WebClient().DownloadString("https://uselessfacts.jsph.pl/today.json?language=en");
             var factText = JsonConvert.DeserializeObject<DailyFactJson>(jsonFact);
-
-            var factCreate = new FactDTO
+            if (factText == null)
             {
-                Text = factText?.Text
-            };
-            var fact = await _factRepository.Create(factCreate);
-
-            await CreateFactMessage(client, fact, channel);
+                return;
+            }
+            var fact = await _factRepository.Create(factText.Text);
+            if (fact.status != Status.Created)
+            {
+                return;
+            }
+            await CreateFactMessage(client, fact.fact, channel);
         }
 
         public async Task<DiscordMessageBuilder> GetReactionMessage(DiscordClient client, ulong guildId)
@@ -207,16 +224,16 @@ namespace MacintoshBot.ClientHandler
         public async Task MakeMemberMod(DiscordClient client, DiscordMember member, DiscordRole modRole, ulong guildId)
         {
             var proRole = await _levelRoleRepository.GetHighestRank(guildId);
-            if (proRole == null)
+            if (proRole.status != Status.Found)
             {
                 return;
                 
             }
 
-            var discordRole = await DiscordRoleFromId(client, proRole.RoleId, guildId);
+            var discordRole = await DiscordRoleFromId(client, proRole.role.RoleId, guildId);
             
             //remove the old roles
-            await RevokeOtherRoles(client, member, proRole, guildId);
+            await RevokeOtherRoles(client, member, proRole.role, guildId);
             //Grant the new roles
             await member.GrantRoleAsync(discordRole);
 
@@ -226,14 +243,14 @@ namespace MacintoshBot.ClientHandler
         public async Task MakeUnMod(DiscordClient client, DiscordMember member, DiscordRole modRole, ulong guildId)
         {
             var levelRole = await _levelRoleRepository.GetLevelRoleFromTime(member.JoinedAt, guildId);
-            if (levelRole == null)
+            if (levelRole.status != Status.Found)
             {
                 return;
             }
             
-            var discordRole = await DiscordRoleFromId(client, levelRole.RoleId, guildId);
+            var discordRole = await DiscordRoleFromId(client, levelRole.role.RoleId, guildId);
             //remove the old roles
-            await RevokeOtherRoles(client, member, levelRole, guildId);
+            await RevokeOtherRoles(client, member, levelRole.role, guildId);
             //Grant the new roles
             await member.GrantRoleAsync(discordRole);
             //Revoke the modeator role

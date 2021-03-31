@@ -14,11 +14,11 @@ namespace MacintoshBot.Models.Facts
             _context = context;
         }
 
-        public async Task<FactDTO> Create(FactDTO fact)
+        public async Task<(Status status, FactDTO fact)> Create(string factText)
         {
             var factCreate = new Fact
             {
-                Text = fact.Text,
+                Text = factText
             };
 
             var createdFact = await _context.Facts.AddAsync(factCreate);
@@ -26,16 +26,16 @@ namespace MacintoshBot.Models.Facts
             
             if (createdFact.Entity == null)
             {
-                return null;
+                return (Status.Error, null);
             }
-            return new FactDTO
+            return (Status.Created, new FactDTO
             {
                 Id = createdFact.Entity.Id,
                 Text = createdFact.Entity.Text,
-            };
+            });
         }
 
-        public async Task<FactDTO> Get(int factId)
+        public async Task<(Status status, FactDTO fact)> Get(int factId)
         {
             if (factId == 0)
             {
@@ -44,16 +44,16 @@ namespace MacintoshBot.Models.Facts
             var fact = await _context.Facts.FirstOrDefaultAsync(f => f.Id == factId);
             if (fact == null)
             {
-                return null;
+                return (Status.BadRequest, null);
             }
-            return new FactDTO
+            return (Status.Found, new FactDTO
             {
                 Id = fact.Id,
                 Text = fact.Text
-            };
+            });
         }
 
-        public async Task<FactDTO> GetMostRecent()
+        private async Task<(Status status, FactDTO fact)> GetMostRecent()
         {
             var latestFactId = await _context.Facts.MaxAsync(f => f.Id);
             return await Get(latestFactId);

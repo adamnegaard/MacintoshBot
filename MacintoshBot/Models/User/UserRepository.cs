@@ -17,12 +17,12 @@ namespace MacintoshBot.Models.User
             _context = context;
         }
         
-        public async Task<Status> Create(ulong userId, ulong guildId)
+        public async Task<(Status status, UserDTO user)> Create(ulong userId, ulong guildId)
         {
             var existingUser = await Get(userId, guildId);
-            if (existingUser != null)
+            if (existingUser.status == Status.Found)
             {
-                return Status.Conflict;
+                return (Status.Conflict, existingUser.user);
             }
             var newUser = new Entities.User
             {
@@ -30,9 +30,21 @@ namespace MacintoshBot.Models.User
                 GuildId = guildId,
                 Xp = 0,
             };
-            await _context.Members.AddAsync(newUser);
+            
+            var createdUser = await _context.Members.AddAsync(newUser);
             await _context.SaveChangesAsync();
-            return Status.Created;
+
+            if (createdUser.Entity == null)
+            {
+                return (Status.Error, null);
+            }
+            
+            return (Status.Created, new UserDTO
+            {
+                UserId = createdUser.Entity.UserId,
+                GuildId = createdUser.Entity.GuildId,
+                Xp = createdUser.Entity.Xp,
+            });
         }
 
         public async Task<Status> Delete(ulong userId, ulong guildId)
@@ -79,19 +91,19 @@ namespace MacintoshBot.Models.User
             return user.Xp;
         }
 
-        public async Task<UserDTO> Get(ulong userId, ulong guildId)
+        public async Task<(Status status, UserDTO user)> Get(ulong userId, ulong guildId)
         {
             var user = await _context.Members.FirstOrDefaultAsync(u => u.UserId == userId && u.GuildId == guildId);
             if (user == null)
             {
-                return null;
+                return (Status.BadRequest, null);
             }
-            return new UserDTO
+            return (Status.Found, new UserDTO
             {
                 UserId = user.UserId,
                 GuildId = user.GuildId,
                 Xp = user.Xp
-            };
+            });
         }
     }
 }

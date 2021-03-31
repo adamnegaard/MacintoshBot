@@ -18,7 +18,11 @@ namespace MacintoshBot
             var guildId = eventArgs.Guild.Id;
             //Get the needed variables
             var messageId = eventArgs.Message.Id;
-            var roleId = await _groupRepository.GetRoleIdFromEmoji(eventArgs.Emoji.GetDiscordName(), guildId);
+            var role = await _groupRepository.GetRoleIdFromEmoji(eventArgs.Emoji.GetDiscordName(), guildId);
+            if (role.status != Status.Found)
+            {
+                return;
+            }
             var reactionUser = eventArgs.User as DiscordMember;
             
             if(reactionUser == null || reactionUser.IsBot)
@@ -26,9 +30,10 @@ namespace MacintoshBot
                 return;
             }
             //Perform the role update
-            if (messageId == await _messageRepository.Get("role", guildId))
+            var message = await _messageRepository.GetMessageId("role", guildId);
+            if (message.status == Status.Found && messageId == message.messageId)
             {
-                var discordRole = await _clientHandler.DiscordRoleFromId(_client, roleId, guildId);
+                var discordRole = await _clientHandler.DiscordRoleFromId(_client, role.roleId, guildId);
                 await reactionUser.GrantRoleAsync(discordRole).ConfigureAwait(false);
             }
         }
@@ -39,7 +44,11 @@ namespace MacintoshBot
             var guildId = eventArgs.Guild.Id;
             //Get the needed variables
             var messageId = eventArgs.Message.Id;
-            var roleId = await _groupRepository.GetRoleIdFromEmoji(eventArgs.Emoji.GetDiscordName(), guildId);
+            var role = await _groupRepository.GetRoleIdFromEmoji(eventArgs.Emoji.GetDiscordName(), guildId);
+            if (role.status != Status.Found)
+            {
+                return;
+            }
             var reactionUser = eventArgs.User as DiscordMember;
             
             if(reactionUser == null || reactionUser.IsBot)
@@ -47,9 +56,10 @@ namespace MacintoshBot
                 return;
             }
             //Perform the role update
-            if (messageId == await _messageRepository.Get("role", guildId))
+            var message = await _messageRepository.GetMessageId("role", guildId);
+            if (message.status == Status.Found && messageId == message.messageId)
             {
-                var discordRole = await _clientHandler.DiscordRoleFromId(_client, roleId, guildId);
+                var discordRole = await _clientHandler.DiscordRoleFromId(_client, role.roleId, guildId);
                 await reactionUser.RevokeRoleAsync(discordRole).ConfigureAwait(false);
             }
         }
@@ -71,20 +81,20 @@ namespace MacintoshBot
         private async Task AssignNewUserRoles(DiscordMember member, ulong guildId)
         {
             //Create the user
-            var status = await _userRepository.Create(member.Id, guildId);
-            if (status != Status.Created)
+            var createdUser = await _userRepository.Create(member.Id, guildId);
+            if (createdUser.status != Status.Created)
             {
                 return;
             }
             
             //Get the scrub role
             var lowestRank = await _levelRoleRepository.GetLowestRank(guildId);
-            if (lowestRank == null)
+            if (lowestRank.status != Status.Found)
             {
                 return;
             }
 
-            var discordRole = await _clientHandler.DiscordRoleFromId(_client, lowestRank.RoleId, guildId);
+            var discordRole = await _clientHandler.DiscordRoleFromId(_client, lowestRank.role.RoleId, guildId);
             await member.GrantRoleAsync(discordRole);
         }
         
@@ -111,12 +121,12 @@ namespace MacintoshBot
             {
                 return;
             }
-            var newMemberChannelDTO = await _channelRepository.Get("newmembers", guildId);
-            if (newMemberChannelDTO == null)
+            var newMemberChannel = await _channelRepository.Get("newmembers", guildId);
+            if (newMemberChannel.status != Status.Found)
             {
                 return;
             }
-            var newMemberDiscordChannel = server.Channels.Values.FirstOrDefault(c => c.Id == newMemberChannelDTO.ChannelId);
+            var newMemberDiscordChannel = server.Channels.Values.FirstOrDefault(c => c.Id == newMemberChannel.channel.ChannelId);
             if (newMemberDiscordChannel == null)
             {
                 return;
@@ -127,8 +137,8 @@ namespace MacintoshBot
         private async Task OnGuildAvailable(DiscordClient client, GuildCreateEventArgs eventArgs)
         {
             var guildId = eventArgs.Guild.Id;
-            var assignMessage = await _messageRepository.Get("role", guildId);
-            if (assignMessage == 0)
+            var assignMessage = await _messageRepository.GetMessageId("role", guildId);
+            if (assignMessage.status != Status.Found)
             {
                 var newAssignMessage = await _clientHandler.SendSelfAssignMessage(client, guildId);
                 var roleMessage = new MessageDTO
@@ -137,7 +147,11 @@ namespace MacintoshBot
                     GuildId = guildId,
                     RefName = "role"
                 };
-                await _messageRepository.Create(roleMessage);
+                var message = await _messageRepository.Create(roleMessage);
+                if (message.status != Status.Created)
+                {
+                    return;
+                }
                 await _clientHandler.SelfAssignRoles(client, guildId);
             }
         }

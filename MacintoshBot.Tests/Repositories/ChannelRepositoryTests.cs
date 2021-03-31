@@ -29,24 +29,27 @@ namespace MacintoshBot.Tests
         [Fact]
         public async void GetExistingChannel()
         {
-            var channel = await _channelRepository.Get("role", 1);
-            Assert.Equal("role", channel.RefName);
-            Assert.Equal(1u, channel.GuildId);
-            Assert.Equal(1u, channel.ChannelId);
+            var response = await _channelRepository.Get("role", 1);
+            Assert.Equal(Status.Found, response.status);
+            Assert.Equal("role", response.channel.RefName);
+            Assert.Equal(1u, response.channel.GuildId);
+            Assert.Equal(1u, response.channel.ChannelId);
         }
         
         [Fact]
         public async void GetNonExistingChannelName()
         {
-            var channel = await _channelRepository.Get("test", 1);
-            Assert.Null(channel);
+            var response = await _channelRepository.Get("test", 1);
+            Assert.Equal(Status.BadRequest, response.status);
+            Assert.Null(response.channel);
         }
         
         [Fact]
         public async void GetNonExistingChannelGuild()
         {
-            var channel = await _channelRepository.Get("role", 42);
-            Assert.Null(channel);
+            var response = await _channelRepository.Get("role", 42);
+            Assert.Equal(Status.BadRequest, response.status);
+            Assert.Null(response.channel);
         }
         
         [Fact]
@@ -59,7 +62,10 @@ namespace MacintoshBot.Tests
                 ChannelId = 1,
             };
             var actual = await _channelRepository.Create(channel);
-            Assert.Equal(Status.Conflict, actual);
+            Assert.Equal(Status.Conflict, actual.status);
+            Assert.Equal("role", actual.channel.RefName);
+            Assert.Equal(1u, actual.channel.GuildId);
+            Assert.Equal(1u, actual.channel.ChannelId);
         }
         
         [Fact]
@@ -72,7 +78,7 @@ namespace MacintoshBot.Tests
                 ChannelId = 1,
             };
             var actual = await _channelRepository.Create(channel);
-            Assert.Equal(Status.Created, actual);
+            Assert.Equal(Status.Created, actual.status);
         }
         
         [Fact]
@@ -85,7 +91,7 @@ namespace MacintoshBot.Tests
                 ChannelId = 1,
             };
             var actual = await _channelRepository.Create(channel);
-            Assert.Equal(Status.Created, actual);
+            Assert.Equal(Status.Created, actual.status);
         }
     }
 }
