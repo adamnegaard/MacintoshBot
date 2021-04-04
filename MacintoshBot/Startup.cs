@@ -5,8 +5,8 @@ using MacintoshBot.Entities;
 using MacintoshBot.Jobs;
 using MacintoshBot.Models.Channel;
 using MacintoshBot.Models.Facts;
+using MacintoshBot.Models.File;
 using MacintoshBot.Models.Group;
-using MacintoshBot.Models.Image;
 using MacintoshBot.Models.Message;
 using MacintoshBot.Models.Role;
 using MacintoshBot.Models.User;
@@ -46,7 +46,7 @@ namespace MacintoshBot
             //Database related
             services.AddScoped<ILevelRoleRepository, LevelRoleRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
-            services.AddScoped<IImageRepository, ImageRepository>();
+            services.AddScoped<IFileRepository, FileRepository>();
             services.AddScoped<IGroupRepository, GroupRepository>();
             services.AddScoped<IMessageRepository, MessageRepository>();
             services.AddScoped<IChannelRepository, ChannelRepository>();

@@ -1,8 +1,6 @@
-﻿using System;
-
-namespace MacintoshBot.Models.Image
+﻿namespace MacintoshBot.Models.File
 {
-    public class ImageDTO
+    public class FileDTO
     {
         public string Title { get; set; }
         public ulong GuildId { get; set; }

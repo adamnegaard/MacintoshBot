@@ -7,7 +7,7 @@ namespace MacintoshBot.Entities
     public interface IDiscordContext
     {
         DbSet<User> Members { get; set; }
-        DbSet<Image> Images { get; set; }
+        DbSet<File> Files { get; set; }
         DbSet<Group> Groups { get; set; }
         DbSet<Message> Messages { get; set; }
         DbSet<Role> LevelRoles { get; set; }

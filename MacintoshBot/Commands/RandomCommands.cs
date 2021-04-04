@@ -9,7 +9,7 @@ using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using MacintoshBot.Models;
 using MacintoshBot.Models.Facts;
-using MacintoshBot.Models.Image;
+using MacintoshBot.Models.File;
 
 namespace MacintoshBot.Commands
 {
@@ -18,13 +18,13 @@ namespace MacintoshBot.Commands
     public class RandomCommands : BaseCommandModule
     {
         
-        private readonly IImageRepository _imageRepository;
+        private readonly IFileRepository _fileRepository;
         private readonly IFactRepository _factRepository;
         private readonly IClientHandler _clientHandler;
 
-        public RandomCommands(IImageRepository imageRepository, IFactRepository factRepository, IClientHandler clientHandler)
+        public RandomCommands(IFileRepository fileRepository, IFactRepository factRepository, IClientHandler clientHandler)
         {
-            _imageRepository = imageRepository;
+            _fileRepository = fileRepository;
             _factRepository = factRepository;
             _clientHandler = clientHandler;
         }
@@ -51,23 +51,23 @@ namespace MacintoshBot.Commands
             await _clientHandler.CreateFactMessage(ctx.Client, fact.fact, ctx.Channel);
         }
         
-        [Command("Images")]
-        [Description("See the list of available images")]
-        public async Task Images(CommandContext ctx)
+        [Command("Files")]
+        [Description("See the list of available files")]
+        public async Task Files(CommandContext ctx)
         {
             var guildId = ctx.Guild.Id;
-            var images = await _imageRepository.Get(guildId);
-            if (images == null)
+            var files = await _fileRepository.Get(guildId);
+            if (files == null)
             {
                 await ctx.Channel.SendMessageAsync("Something went wrong");
                 return;
             }
             var builder = new StringBuilder();
             builder.Append("**The list of available images is:**\n");
-            foreach (var imageTitle in images)
+            foreach (var fileTitle in files)
             {
-                builder.Append(imageTitle);
-                if (!images.Last().Equals(imageTitle)) builder.Append(", ");
+                builder.Append(fileTitle);
+                if (!files.Last().Equals(fileTitle)) builder.Append(", ");
             }
 
             await ctx.Member.SendMessageAsync(builder.ToString()); 
@@ -78,14 +78,14 @@ namespace MacintoshBot.Commands
         public async Task Get(CommandContext ctx, [Description("Name of image")] [RemainingText] string fileTitle)
         {
             var guildId = ctx.Guild.Id;
-            var response = await _imageRepository.Get(fileTitle, guildId);
+            var response = await _fileRepository.Get(fileTitle, guildId);
             if (response.status != Status.Found)
             {
                 await ctx.Channel.SendMessageAsync($"Could not find the image {fileTitle} in the database, try `?images`");
                 return;
             }
 
-            var image = response.image;
+            var image = response.file;
             var imageEmbed = new DiscordEmbedBuilder
             {
                 Title = image.Title,
@@ -108,14 +108,14 @@ namespace MacintoshBot.Commands
             }
             foreach (var attachment in attachments)
             {
-                var image = new ImageDTO
+                var image = new FileDTO
                 {
                     Title = fileTitle,
                     GuildId = guildId,
                     Location = attachment.Url
                 };
 
-                var response = await _imageRepository.Create(image);
+                var response = await _fileRepository.Create(image);
                 if (response.status != Status.Created)
                 {
                     await ctx.Channel.SendMessageAsync("Uknown error, could not create the image");

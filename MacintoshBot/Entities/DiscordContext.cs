@@ -7,7 +7,7 @@ namespace MacintoshBot.Entities
     public class DiscordContext : DbContext, IDiscordContext
     {
         public DbSet<User> Members { get; set; }
-        public DbSet<Image> Images { get; set; }
+        public DbSet<File> Files { get; set; }
         public DbSet<Group> Groups { get; set; }
         public DbSet<Message> Messages { get; set; }
         public DbSet<Role> LevelRoles { get; set; }
@@ -28,9 +28,9 @@ namespace MacintoshBot.Entities
                     .HasKey(u => new {u.UserId, u.GuildId});
             });
 
-            modelBuilder.Entity<Image>(entity =>
+            modelBuilder.Entity<File>(entity =>
             {
-                //Composite key between the image title and the guild
+                //Composite key between the file title and the guild
                 entity
                     .HasKey(i => new {i.Title, i.GuildId});
             });

@@ -58,18 +58,18 @@ namespace MacintoshBot.Tests
                     });
             });
 
-            modelBuilder.Entity<Image>(entity =>
+            modelBuilder.Entity<File>(entity =>
             {
                 entity
                     .HasData(new[]
                     {
-                        new Image
+                        new File
                         {
                             Title = "poggers",
                             GuildId = 1,
                             Location = "http://test/",
                         },
-                        new Image
+                        new File
                         {
                             Title = "big-spender",
                             GuildId = 1,

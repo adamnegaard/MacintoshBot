@@ -4,7 +4,7 @@ using DSharpPlus.CommandsNext.Attributes;
 
 namespace MacintoshBot.Entities
 {
-    public class Image
+    public class File
     {
         public string Title { get; set; }
         public ulong GuildId { get; set; }
