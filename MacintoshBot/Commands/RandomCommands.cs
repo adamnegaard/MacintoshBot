@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -36,26 +37,6 @@ namespace MacintoshBot.Commands
             await ctx.Channel.SendMessageAsync($"{ctx.Member.DisplayName} rolled: {random.Next(min, max)}");
         }
 
-        [Command("Poggers")]
-        [Description("A poggers image")]
-        public async Task Poggers(CommandContext ctx)
-        {
-            var guildId = ctx.Guild.Id;
-            var imageEmbed = new DiscordEmbedBuilder
-            {
-                Title = "Paaaawg Chaaampion",
-                Description = "A wild pawgers appeared"
-            };
-            var poggers = await _imageRepository.GetLocation("poggers", guildId);
-            if (poggers.status != Status.Found)
-            {
-                await ctx.Channel.SendMessageAsync("Could not find the poggers image");
-                return;
-            }
-            imageEmbed.WithImageUrl(poggers.location);
-            await ctx.Channel.SendMessageAsync(embed: imageEmbed);
-        }
-        
         [Command("fact")]
         [Description("A poggers image")]
         public async Task Fact(CommandContext ctx, [Description("Fact number")] int num = 0)
@@ -92,23 +73,58 @@ namespace MacintoshBot.Commands
             await ctx.Member.SendMessageAsync(builder.ToString()); 
         }
         
-        [Command("Show")]
-        [Description("Show a image based on its string representation")]
-        public async Task Show(CommandContext ctx, [Description("Name of image")] string imageTitle)
+        [Command("Get")]
+        [Description("Show a file based on its string representation")]
+        public async Task Get(CommandContext ctx, [Description("Name of image")] [RemainingText] string fileTitle)
         {
             var guildId = ctx.Guild.Id;
-            var image = await _imageRepository.GetLocation(imageTitle, guildId);
-            if (image.status != Status.Found)
+            var response = await _imageRepository.Get(fileTitle, guildId);
+            if (response.status != Status.Found)
             {
-                await ctx.Channel.SendMessageAsync($"Could not find the image {imageTitle}, try `?images`");
+                await ctx.Channel.SendMessageAsync($"Could not find the image {fileTitle} in the database, try `?images`");
                 return;
             }
+
+            var image = response.image;
             var imageEmbed = new DiscordEmbedBuilder
             {
-                Title = imageTitle,
+                Title = image.Title,
+                ImageUrl = image.Location,
             };
-            imageEmbed.WithImageUrl(image.location);
             await ctx.Channel.SendMessageAsync(embed: imageEmbed);
         }
+
+        [Command("AddFile")]
+        [Description("Adds an file to the available files on the server")]
+        public async Task AddFile(CommandContext ctx, [Description("Name of file")] [RemainingText] string fileTitle)
+        {
+            var message = ctx.Message;
+            var guildId = ctx.Guild.Id;
+            var attachments = message.Attachments;
+            if (!attachments.Any())
+            {
+                await ctx.Channel.SendMessageAsync("Please attach something!");
+                return;
+            }
+            foreach (var attachment in attachments)
+            {
+                var image = new ImageDTO
+                {
+                    Title = fileTitle,
+                    GuildId = guildId,
+                    Location = attachment.Url
+                };
+
+                var response = await _imageRepository.Create(image);
+                if (response.status != Status.Created)
+                {
+                    await ctx.Channel.SendMessageAsync("Uknown error, could not create the image");
+                    return;
+                }
+
+                await ctx.Channel.SendMessageAsync($"Added the image under the name {fileTitle}");
+            }
+        }
+        
     }
 }

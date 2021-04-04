@@ -273,7 +273,7 @@ namespace MacintoshBot.ClientHandler
         {
             var factEmbed = new DiscordEmbedBuilder
             {
-                Title = $"Daily Fact #{fact.Id}!",
+                Title = $"Daily Fact #{fact.Id}",
                 Description = fact.Text,
                 Timestamp = DateTimeOffset.Now
             };

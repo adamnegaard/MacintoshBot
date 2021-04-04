@@ -9,6 +9,6 @@ namespace MacintoshBot.Entities
         public string Title { get; set; }
         public ulong GuildId { get; set; }
         [Required]
-        public Uri Location { get; set; }
+        public string Location { get; set; }
     }
 }

@@ -67,13 +67,13 @@ namespace MacintoshBot.Tests
                         {
                             Title = "poggers",
                             GuildId = 1,
-                            Location = new Uri("http://test/"),
+                            Location = "http://test/",
                         },
                         new Image
                         {
                             Title = "big-spender",
                             GuildId = 1,
-                            Location = new Uri("http://test2/"),
+                            Location = "http://test2/",
                         },
                     });
             });

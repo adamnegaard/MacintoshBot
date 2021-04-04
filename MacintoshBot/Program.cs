@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Configuration;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -38,9 +39,11 @@ namespace MacintoshBot
                         {
                             logging.SetMinimumLevel(LogLevel.Information);
                         })
+                        .UseWebRoot("Public")
                         //For some odd reason, this line is required for dependency injection in this case? See https://github.com/aspnet/DependencyInjection/issues/578
                         .UseDefaultServiceProvider(options =>
                             options.ValidateScopes = false);
+
                 });
     }
 }

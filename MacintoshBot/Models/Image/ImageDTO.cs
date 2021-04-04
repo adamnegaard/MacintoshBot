@@ -6,6 +6,6 @@ namespace MacintoshBot.Models.Image
     {
         public string Title { get; set; }
         public ulong GuildId { get; set; }
-        public Uri Location { get; set; }
+        public string Location { get; set; }
     }
 }
