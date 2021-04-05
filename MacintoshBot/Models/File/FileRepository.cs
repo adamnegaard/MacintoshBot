@@ -22,7 +22,7 @@ namespace MacintoshBot.Models.File
         
         public async Task<(Status status, FileDTO file)> Get(string fileTitle, ulong guildId)
         {
-            var file = await _context.Files.FirstOrDefaultAsync(i => i.Title.Equals(fileTitle) && i.GuildId == guildId);
+            var file = await _context.Files.FirstOrDefaultAsync(i => i.Title.ToLower().Equals(fileTitle.ToLower()) && i.GuildId == guildId);
             if (file == null)
             {
                 return (Status.BadRequest, null);
