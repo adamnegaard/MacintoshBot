@@ -38,7 +38,7 @@ namespace MacintoshBot.Commands
         }
 
         [Command("fact")]
-        [Description("A poggers image")]
+        [Description("Get on of the facts from the #fact channel")]
         public async Task Fact(CommandContext ctx, [Description("Fact number")] int num = 0)
         {
             var fact = await _factRepository.Get(num);
@@ -63,7 +63,7 @@ namespace MacintoshBot.Commands
                 return;
             }
             var builder = new StringBuilder();
-            builder.Append("**The list of available images is:**\n");
+            builder.Append("**The list of available files is:**\n");
             foreach (var fileTitle in files)
             {
                 builder.Append(fileTitle);
@@ -75,21 +75,22 @@ namespace MacintoshBot.Commands
         
         [Command("Get")]
         [Description("Show a file based on its string representation")]
-        public async Task Get(CommandContext ctx, [Description("Name of image")] [RemainingText] string fileTitle)
+        public async Task Get(CommandContext ctx, [Description("Name of file")] [RemainingText] string fileTitle)
         {
             var guildId = ctx.Guild.Id;
             var response = await _fileRepository.Get(fileTitle, guildId);
             if (response.status != Status.Found)
             {
-                await ctx.Channel.SendMessageAsync($"Could not find the image {fileTitle} in the database, try `?images`");
+                await ctx.Channel.SendMessageAsync($"Could not find the file {fileTitle} in the database, try `?files`");
                 return;
             }
 
-            var image = response.file;
+            var file = response.file;
             var imageEmbed = new DiscordEmbedBuilder
             {
-                Title = image.Title,
-                ImageUrl = image.Location,
+                Title = file.Title,
+                ImageUrl = file.Location,
+                Color = DiscordColor.Aquamarine
             };
             await ctx.Channel.SendMessageAsync(embed: imageEmbed);
         }
@@ -108,21 +109,21 @@ namespace MacintoshBot.Commands
             }
             foreach (var attachment in attachments)
             {
-                var image = new FileDTO
+                var file = new FileDTO
                 {
                     Title = fileTitle,
                     GuildId = guildId,
                     Location = attachment.Url
                 };
 
-                var response = await _fileRepository.Create(image);
+                var response = await _fileRepository.Create(file);
                 if (response.status != Status.Created)
                 {
-                    await ctx.Channel.SendMessageAsync("Uknown error, could not create the image");
+                    await ctx.Channel.SendMessageAsync("Uknown error, could not create the file");
                     return;
                 }
 
-                await ctx.Channel.SendMessageAsync($"Added the image under the name {fileTitle}");
+                await ctx.Channel.SendMessageAsync($"Added the file under the name {fileTitle}");
             }
         }
         

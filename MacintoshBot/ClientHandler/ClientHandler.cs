@@ -275,7 +275,8 @@ namespace MacintoshBot.ClientHandler
             {
                 Title = $"Daily Fact #{fact.Id}",
                 Description = fact.Text,
-                Timestamp = DateTimeOffset.Now
+                Timestamp = DateTimeOffset.Now,
+                Color = DiscordColor.Aquamarine
             };
             var message = await channel.SendMessageAsync(embed: factEmbed);
             

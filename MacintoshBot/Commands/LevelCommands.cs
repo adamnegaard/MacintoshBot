@@ -48,7 +48,8 @@ namespace MacintoshBot.Commands
             {
                 Title = $"{member.DisplayName}'s Profile",
                 Description = $"Member for {_levelRoleRepository.GetDays(member.JoinedAt)} days",
-                ImageUrl = member.AvatarUrl
+                ImageUrl = member.AvatarUrl,
+                Color = DiscordColor.Aquamarine
             };
             //Add relevant fields
             levelEmbed.AddField("Level", actualUser.user.Level.ToString());
