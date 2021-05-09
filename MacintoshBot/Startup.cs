@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Configuration;
 using System.IO;
+using System.Net.Http;
+using DSharpPlus;
 using MacintoshBot.Entities;
 using MacintoshBot.Jobs;
 using MacintoshBot.Models.Channel;
@@ -22,6 +24,8 @@ using Microsoft.Extensions.Hosting;
 using Quartz;
 using Quartz.Impl;
 using Quartz.Spi;
+using SteamWebAPI2.Interfaces;
+using SteamWebAPI2.Utilities;
 
 namespace MacintoshBot
 {
@@ -57,6 +61,17 @@ namespace MacintoshBot
             services.AddScoped<IXpGrantModel, XpGrantModel>();
             services.AddScoped<IClientHandler, ClientHandler.ClientHandler>();
             
+            //Steam API related
+            var webInterfaceFactory = new SteamWebInterfaceFactory(Configuration["Steam:ApiKey"]);
+            services.AddSingleton<ISteamWebInterfaceFactory>(webInterfaceFactory);
+
+            services.AddSingleton<DiscordRestClient>(new DiscordRestClient(new DiscordConfiguration
+            {
+                Token = Configuration.GetConnectionString("DiscordClientSecret"),
+                TokenType = TokenType.Bot,
+                AutoReconnect = true,
+            }));
+
             //The discord bot
             services.AddDiscordService();
               
@@ -69,8 +84,6 @@ namespace MacintoshBot
             services.AddSingleton<DailyFactJob>();
             
             services.AddHostedService<QuartzHostedService>();
-
-            services.BuildServiceProvider();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

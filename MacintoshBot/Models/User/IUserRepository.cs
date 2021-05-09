@@ -12,6 +12,7 @@ namespace MacintoshBot.Models.User
         Task<(Status status, UserDTO user)> Get(ulong userId, ulong guildId);
         Task<IEnumerable<UserDTO>> Get(ulong guildId);
         Task<IEnumerable<UserDTO>> Get();
+        Task<(Status status, UserDTO user)> Update(UserUpdateDTO userUpdate);
         Task<int> AddXp(ulong userId, ulong guildId, int xpAmount);
     }
 }

@@ -42,11 +42,14 @@ namespace MacintoshBot
                               | DiscordIntents.GuildPresences
                 };
                 
+                
+                
                 var client = new DiscordClient(discordConfig);
 
                 //Return the service.
                 return client;
             });
+
 
             return services.AddHostedService<Bot>();
         }

@@ -69,6 +69,7 @@ namespace MacintoshBot
 
             //Commands adding
             _commands = _client.UseCommandsNext(commandsConfig);
+            _commands.RegisterCommands<RustCommands>();
             _commands.RegisterCommands<ManageCommands>();
             _commands.RegisterCommands<LevelCommands>();
             _commands.RegisterCommands<RandomCommands>();
