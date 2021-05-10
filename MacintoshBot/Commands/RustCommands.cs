@@ -33,7 +33,7 @@ namespace MacintoshBot.Commands
             {
                 member = ctx.Member;
             }
-            var loadingMessage = await ctx.Channel.SendMessageAsync($"Getting {member.Mention}'s stats...");
+            var loadingMessage = await ctx.Channel.SendMessageAsync($"Getting {member.Nickname}'s stats...");
             //Get the user from the database
             var (status, user) = await _userRepository.Get(member.Id, guildId);
             //If we can find the user in the database, return
