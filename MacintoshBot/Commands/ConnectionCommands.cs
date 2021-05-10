@@ -50,7 +50,6 @@ namespace MacintoshBot.Commands
 
         public async Task<DiscordEmbedBuilder> LinkSteam(UserUpdateDTO userUpdate, string profilePage)
         {
-            var platform = "Steam";
             try
             {
                 var vainityPattern = @"steamcommunity.com\/id\/(.*)\/";
