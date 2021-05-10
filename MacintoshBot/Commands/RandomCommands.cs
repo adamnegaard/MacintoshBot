@@ -90,9 +90,8 @@ namespace MacintoshBot.Commands
             {
                 Title = file.Title,
                 ImageUrl = file.Location,
-                Color = DiscordColor.Aquamarine
             };
-            await ctx.Channel.SendMessageAsync(embed: imageEmbed);
+            await ctx.Channel.SendMessageAsync(MacintoshEmbed.Create(imageEmbed));
         }
 
         [Command("AddFile")]
