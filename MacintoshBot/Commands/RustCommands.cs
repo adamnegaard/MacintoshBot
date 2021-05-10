@@ -27,30 +27,30 @@ namespace MacintoshBot.Commands
         [Description("Check your Rust stats")]
         public async Task RustStats(CommandContext ctx, DiscordMember member = null)
         {
-            var loadingMessage = await ctx.Channel.SendMessageAsync("Getting your stats...");
+            var guildId = ctx.Guild.Id;
+            //Check if the member is null, if it is set the member to the one who queried.
+            if (member == null)
+            {
+                member = ctx.Member;
+            }
+            var loadingMessage = await ctx.Channel.SendMessageAsync($"Getting {member.Mention}'s stats...");
+            //Get the user from the database
+            var (status, user) = await _userRepository.Get(member.Id, guildId);
+            //If we can find the user in the database, return
+            if (status != Status.Found)
+            {
+                await loadingMessage.ModifyAsync($"Could not find user {member.DisplayName} in the database");
+                return;
+            }
+
+            var steamId = user.SteamId;
+            if (steamId == 0u)
+            {
+                await loadingMessage.ModifyAsync($"{member.DisplayName} does not have a SteamId set");
+                return;
+            }
             try
             {
-                var guildId = ctx.Guild.Id;
-                //Check if the member is null, if it is set the member to the one who queried.
-                if (member == null)
-                {
-                    member = ctx.Member;
-                }
-                //Get the user from the database
-                var (status, user) = await _userRepository.Get(member.Id, guildId);
-                //If we can find the user in the database, return
-                if (status != Status.Found)
-                {
-                    await loadingMessage.ModifyAsync($"Could not find user {member.DisplayName} in the database");
-                    return;
-                }
-
-                var steamId = user.SteamId;
-                if (steamId == 0u)
-                {
-                    await loadingMessage.ModifyAsync($"{member.DisplayName} does not have a SteamId set");
-                    return;
-                }
                 var steamOwnedGames  = await _steamPlayerService.GetOwnedGamesAsync(steamId);
                 var rustGame = steamOwnedGames.Data.OwnedGames.FirstOrDefault(g => g.AppId == rustGameId);
 
