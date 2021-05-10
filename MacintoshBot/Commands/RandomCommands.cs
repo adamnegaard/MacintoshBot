@@ -93,10 +93,9 @@ namespace MacintoshBot.Commands
             var imageEmbed = new DiscordEmbedBuilder
             {
                 Title = file.Title,
-                ImageUrl = file.Location,
-                Color = DiscordColor.Aquamarine
+                ImageUrl = file.Location
             };
-            await ctx.Channel.SendMessageAsync(imageEmbed);
+            await ctx.Channel.SendMessageAsync(MacintoshEmbed.Create(imageEmbed));
         }
 
         [Command("AddFile")]

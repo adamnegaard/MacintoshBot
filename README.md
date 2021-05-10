@@ -13,6 +13,10 @@ Find your bots Token under Bot><your_application>Build-A-Bot>Token [here](https:
 ```
 dotnet user-secrets set "ConnectionStrings:DiscordClientSecret" "<token>"
 ```
+Set your Steam Api Key (generate one [here](https://steamcommunity.com/dev/apikey)).
+```
+dotnet user-secrets set "Steam:ApiKey" "<ApiKey>"
+```
 
 ## Building the database
 Change to the root directory of the application `MacintoshBot` and enter the commands:

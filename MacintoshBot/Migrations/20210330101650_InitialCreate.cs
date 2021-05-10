@@ -7,89 +7,107 @@ namespace MacintoshBot.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                "Channels",
-                table => new
+                name: "Channels",
+                columns: table => new
                 {
-                    RefName = table.Column<string>("text", nullable: false),
-                    GuildId = table.Column<decimal>("numeric(20,0)", nullable: false),
-                    ChannelId = table.Column<decimal>("numeric(20,0)", nullable: false)
+                    RefName = table.Column<string>(type: "text", nullable: false),
+                    GuildId = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
+                    ChannelId = table.Column<decimal>(type: "numeric(20,0)", nullable: false)
                 },
-                constraints: table => { table.PrimaryKey("PK_Channels", x => new {x.RefName, x.GuildId}); });
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Channels", x => new { x.RefName, x.GuildId });
+                });
 
             migrationBuilder.CreateTable(
-                "Groups",
-                table => new
+                name: "Groups",
+                columns: table => new
                 {
-                    Name = table.Column<string>("text", nullable: false),
-                    GuildId = table.Column<decimal>("numeric(20,0)", nullable: false),
-                    FullName = table.Column<string>("text", nullable: true),
-                    IsGame = table.Column<bool>("boolean", nullable: false),
-                    EmojiName = table.Column<string>("text", nullable: false),
-                    DiscordRoleId = table.Column<decimal>("numeric(20,0)", nullable: false)
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    GuildId = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
+                    FullName = table.Column<string>(type: "text", nullable: true),
+                    IsGame = table.Column<bool>(type: "boolean", nullable: false),
+                    EmojiName = table.Column<string>(type: "text", nullable: false),
+                    DiscordRoleId = table.Column<decimal>(type: "numeric(20,0)", nullable: false)
                 },
-                constraints: table => { table.PrimaryKey("PK_Groups", x => new {x.Name, x.GuildId}); });
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Groups", x => new { x.Name, x.GuildId });
+                });
 
             migrationBuilder.CreateTable(
-                "Images",
-                table => new
+                name: "Images",
+                columns: table => new
                 {
-                    Title = table.Column<string>("text", nullable: false),
-                    GuildId = table.Column<decimal>("numeric(20,0)", nullable: false),
-                    Location = table.Column<string>("text", nullable: false)
+                    Title = table.Column<string>(type: "text", nullable: false),
+                    GuildId = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
+                    Location = table.Column<string>(type: "text", nullable: false)
                 },
-                constraints: table => { table.PrimaryKey("PK_Images", x => new {x.Title, x.GuildId}); });
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Images", x => new { x.Title, x.GuildId });
+                });
 
             migrationBuilder.CreateTable(
-                "LevelRoles",
-                table => new
+                name: "LevelRoles",
+                columns: table => new
                 {
-                    RefName = table.Column<string>("text", nullable: false),
-                    GuildId = table.Column<decimal>("numeric(20,0)", nullable: false),
-                    RoleId = table.Column<decimal>("numeric(20,0)", nullable: false),
-                    Rank = table.Column<int>("integer", nullable: false)
+                    RefName = table.Column<string>(type: "text", nullable: false),
+                    GuildId = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
+                    RoleId = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
+                    Rank = table.Column<int>(type: "integer", nullable: false)
                 },
-                constraints: table => { table.PrimaryKey("PK_LevelRoles", x => new {x.RefName, x.GuildId}); });
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_LevelRoles", x => new { x.RefName, x.GuildId });
+                });
 
             migrationBuilder.CreateTable(
-                "Members",
-                table => new
+                name: "Members",
+                columns: table => new
                 {
-                    UserId = table.Column<decimal>("numeric(20,0)", nullable: false),
-                    GuildId = table.Column<decimal>("numeric(20,0)", nullable: false),
-                    Xp = table.Column<int>("integer", nullable: false)
+                    UserId = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
+                    GuildId = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
+                    Xp = table.Column<int>(type: "integer", nullable: false)
                 },
-                constraints: table => { table.PrimaryKey("PK_Members", x => new {x.UserId, x.GuildId}); });
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Members", x => new { x.UserId, x.GuildId });
+                });
 
             migrationBuilder.CreateTable(
-                "Messages",
-                table => new
+                name: "Messages",
+                columns: table => new
                 {
-                    RefName = table.Column<string>("text", nullable: false),
-                    GuildId = table.Column<decimal>("numeric(20,0)", nullable: false),
-                    MessageId = table.Column<decimal>("numeric(20,0)", nullable: false)
+                    RefName = table.Column<string>(type: "text", nullable: false),
+                    GuildId = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
+                    MessageId = table.Column<decimal>(type: "numeric(20,0)", nullable: false)
                 },
-                constraints: table => { table.PrimaryKey("PK_Messages", x => new {x.RefName, x.GuildId}); });
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Messages", x => new { x.RefName, x.GuildId });
+                });
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                "Channels");
+                name: "Channels");
 
             migrationBuilder.DropTable(
-                "Groups");
+                name: "Groups");
 
             migrationBuilder.DropTable(
-                "Images");
+                name: "Images");
 
             migrationBuilder.DropTable(
-                "LevelRoles");
+                name: "LevelRoles");
 
             migrationBuilder.DropTable(
-                "Members");
+                name: "Members");
 
             migrationBuilder.DropTable(
-                "Messages");
+                name: "Messages");
         }
     }
 }

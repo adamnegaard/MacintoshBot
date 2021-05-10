@@ -55,7 +55,8 @@ namespace MacintoshBot.Models.User
             {
                 UserId = u.UserId,
                 GuildId = u.GuildId,
-                Xp = u.Xp
+                Xp = u.Xp,
+                SteamId = u.SteamId
             }).ToListAsync();
         }
 
@@ -65,8 +66,27 @@ namespace MacintoshBot.Models.User
             {
                 UserId = u.UserId,
                 GuildId = u.GuildId,
-                Xp = u.Xp
+                Xp = u.Xp,
+                SteamId = u.SteamId
             }).ToListAsync();
+        }
+
+        public async Task<(Status status, UserDTO user)> Update(UserUpdateDTO userUpdate)
+        {
+            var user = await _context.Members.FirstOrDefaultAsync(u =>
+                u.UserId == userUpdate.UserId && u.GuildId == userUpdate.GuildId);
+            if (user == null) return (Status.BadRequest, null);
+
+            if (userUpdate.SteamId != 0) user.SteamId = userUpdate.SteamId;
+
+            await _context.SaveChangesAsync();
+            return (Status.Updated, new UserDTO
+            {
+                UserId = user.UserId,
+                GuildId = user.GuildId,
+                Xp = user.Xp,
+                SteamId = user.SteamId
+            });
         }
 
         public async Task<int> AddXp(ulong userId, ulong guildId, int xpAmount)
@@ -86,7 +106,8 @@ namespace MacintoshBot.Models.User
             {
                 UserId = user.UserId,
                 GuildId = user.GuildId,
-                Xp = user.Xp
+                Xp = user.Xp,
+                SteamId = user.SteamId
             });
         }
     }

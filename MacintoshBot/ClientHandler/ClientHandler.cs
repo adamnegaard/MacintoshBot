@@ -4,6 +4,7 @@ using System.Net;
 using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.Entities;
+using MacintoshBot.Commands;
 using MacintoshBot.Models;
 using MacintoshBot.Models.Channel;
 using MacintoshBot.Models.Facts;
@@ -243,11 +244,9 @@ namespace MacintoshBot.ClientHandler
             var factEmbed = new DiscordEmbedBuilder
             {
                 Title = $"Daily Fact #{fact.Id}",
-                Description = fact.Text,
-                Timestamp = DateTimeOffset.Now,
-                Color = DiscordColor.Aquamarine
+                Description = fact.Text
             };
-            var message = await channel.SendMessageAsync(factEmbed);
+            var message = await channel.SendMessageAsync(MacintoshEmbed.Create(factEmbed));
 
             await message.CreateReactionAsync(DiscordEmoji.FromName(client, ":gift:"));
         }

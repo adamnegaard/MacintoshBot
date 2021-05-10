@@ -42,27 +42,30 @@ namespace MacintoshBot.Commands
                 return;
             }
 
-            var timeResponse = _levelRoleRepository.GetDays(member.JoinedAt);
             //Start the embed with relevant fields
+            var memberDays = _levelRoleRepository.GetDays(member.JoinedAt);
+
             var levelEmbed = new DiscordEmbedBuilder
             {
                 Title = $"{member.DisplayName}'s Profile",
-                Description = $"Member for {timeResponse.days} days",
-                ImageUrl = member.AvatarUrl,
-                Color = DiscordColor.Aquamarine
+                Description = $"Member for {memberDays.days} days",
+                Thumbnail = new DiscordEmbedBuilder.EmbedThumbnail
+                {
+                    Url = member.AvatarUrl
+                }
             };
             //Add relevant fields
-            levelEmbed.AddField("Level", actualUser.user.Level.ToString());
-            levelEmbed.AddField("Xp", actualUser.user.Xp.ToString());
+            levelEmbed.AddField("Level", actualUser.user.Level.ToString(), true);
+            levelEmbed.AddField("Xp", actualUser.user.Xp.ToString(), true);
             var levelRole = await _levelRoleRepository.GetLevelFromDiscordMember(member, guildId);
-            if (levelRole.status != Status.Found)
+            if (levelRole.status == Status.Found)
             {
                 var discordRole = await _clientHandler.DiscordRoleFromId(ctx.Client, levelRole.role.RoleId, guildId);
-                levelEmbed.AddField("Role", discordRole.Name);
+                levelEmbed.AddField("Role", discordRole.Name, true);
             }
 
             //Send the embed to the channel.
-            await ctx.Channel.SendMessageAsync(levelEmbed);
+            await ctx.Channel.SendMessageAsync(MacintoshEmbed.Create(levelEmbed));
         }
     }
 }

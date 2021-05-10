@@ -8,20 +8,23 @@ namespace MacintoshBot.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                "Facts",
-                table => new
+                name: "Facts",
+                columns: table => new
                 {
-                    Id = table.Column<int>("integer", nullable: false)
+                    Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn),
-                    Text = table.Column<string>("text", nullable: true)
+                    Text = table.Column<string>(type: "text", nullable: true)
                 },
-                constraints: table => { table.PrimaryKey("PK_Facts", x => x.Id); });
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Facts", x => x.Id);
+                });
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                "Facts");
+                name: "Facts");
         }
     }
 }

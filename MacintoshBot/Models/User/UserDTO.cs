@@ -7,5 +7,6 @@
         public int Xp { get; set; }
 
         public int Level => Xp / 100;
+        public ulong SteamId { get; set; }
     }
 }

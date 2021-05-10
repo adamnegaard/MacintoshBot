@@ -1,4 +1,5 @@
-﻿using MacintoshBot.ClientHandler;
+﻿using DSharpPlus;
+using MacintoshBot.ClientHandler;
 using MacintoshBot.Entities;
 using MacintoshBot.Jobs;
 using MacintoshBot.Models.Channel;
@@ -17,6 +18,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Quartz;
 using Quartz.Impl;
 using Quartz.Spi;
+using SteamWebAPI2.Utilities;
 
 namespace MacintoshBot
 {
@@ -51,6 +53,11 @@ namespace MacintoshBot
             //Models
             services.AddScoped<IXpGrantModel, XpGrantModel>();
             services.AddScoped<IClientHandler, ClientHandler.ClientHandler>();
+
+            //Steam API related
+            var webInterfaceFactory = new SteamWebInterfaceFactory(Configuration["Steam:ApiKey"]);
+            services.AddSingleton<ISteamWebInterfaceFactory>(webInterfaceFactory);
+
 
             //The discord bot
             services.AddDiscordService();
