@@ -23,8 +23,8 @@ namespace MacintoshBot.SteamStats
         public double WoodHarvested { get; private set; }
         [JsonProperty(PropertyName = "headshot")]
         public double HeadShots { get; private set; }
-        [JsonProperty(PropertyName = "kda")]
-        public double KDA
+        [JsonProperty(PropertyName = "kd")]
+        public double KD
         {
             get => Kills / Deaths;
         }

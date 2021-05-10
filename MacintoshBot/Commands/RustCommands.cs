@@ -83,7 +83,7 @@ namespace MacintoshBot.Commands
                     },
                 };
                 
-                discordEmbed.AddField("KDA", $"{Math.Round(rustStats.KDA, 2)}", true);
+                discordEmbed.AddField("KD", $"{Math.Round(rustStats.KD, 2)}", true);
                 discordEmbed.AddField("Kills", $"{rustStats.Kills}", true);
                 discordEmbed.AddField("Deaths", $"{rustStats.Deaths}", true);
                 
