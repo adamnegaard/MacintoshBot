@@ -16,7 +16,9 @@ namespace MacintoshBot.Models.Role
         Task<(Status status, RoleDTO role)> GetLevelFromDiscordMember(DiscordMember member, ulong guildId);
         Task<(Status status, RoleDTO role)> GetLevelNext(int rank, ulong guildId);
         Task<IEnumerable<RoleDTO>> GetAllLevelPrev(int rank, ulong guildId);
+
         Task<IEnumerable<RoleDTO>> GetAllLevelNext(int rank, ulong guildId);
+
         //This bottom method might not be relevant for the specific interface, but for the current design it is.
         (Status status, int days) GetDays(DateTimeOffset joinedSince);
     }

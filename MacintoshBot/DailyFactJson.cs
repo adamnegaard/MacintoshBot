@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace MacintoshBot
+﻿namespace MacintoshBot
 {
     public class DailyFactJson
     {

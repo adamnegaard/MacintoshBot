@@ -1,6 +1,4 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
-using DSharpPlus.CommandsNext.Attributes;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace MacintoshBot.Entities
 {
@@ -8,7 +6,7 @@ namespace MacintoshBot.Entities
     {
         public string Title { get; set; }
         public ulong GuildId { get; set; }
-        [Required]
-        public string Location { get; set; }
+
+        [Required] public string Location { get; set; }
     }
 }

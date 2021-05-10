@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using DSharpPlus.Entities;
 
 namespace MacintoshBot.Models.Group
 {
@@ -10,6 +9,6 @@ namespace MacintoshBot.Models.Group
         Task<(Status status, ulong roleId)> GetRoleIdFromEmoji(string emojiName, ulong guildId);
         Task<IEnumerable<GroupDTO>> Get(ulong guildId);
         Task<(Status status, GroupDTO group)> Create(GroupDTO game);
-        Task<Status> Delete(string name, ulong guildId); 
+        Task<Status> Delete(string name, ulong guildId);
     }
 }

@@ -6,7 +6,7 @@ namespace MacintoshBot.Entities
     {
         public string RefName { get; set; }
         public ulong GuildId { get; set; }
-        [Required]
-        public ulong ChannelId { get; set; }
+
+        [Required] public ulong ChannelId { get; set; }
     }
 }

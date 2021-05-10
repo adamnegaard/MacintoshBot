@@ -7,7 +7,6 @@ using DSharpPlus.EventArgs;
 using MacintoshBot.Models;
 using MacintoshBot.Models.Message;
 
-
 namespace MacintoshBot
 {
     public partial class Bot
@@ -19,16 +18,10 @@ namespace MacintoshBot
             //Get the needed variables
             var messageId = eventArgs.Message.Id;
             var role = await _groupRepository.GetRoleIdFromEmoji(eventArgs.Emoji.GetDiscordName(), guildId);
-            if (role.status != Status.Found)
-            {
-                return;
-            }
+            if (role.status != Status.Found) return;
             var reactionUser = eventArgs.User as DiscordMember;
-            
-            if(reactionUser == null || reactionUser.IsBot)
-            {
-                return;
-            }
+
+            if (reactionUser == null || reactionUser.IsBot) return;
             //Perform the role update
             var message = await _messageRepository.GetMessageId("role", guildId);
             if (message.status == Status.Found && messageId == message.messageId)
@@ -37,7 +30,7 @@ namespace MacintoshBot
                 await reactionUser.GrantRoleAsync(discordRole).ConfigureAwait(false);
             }
         }
-        
+
         //A reaction is removed from the self assign role message
         private async Task OnReactionRemoved(DiscordClient sender, MessageReactionRemoveEventArgs eventArgs)
         {
@@ -45,16 +38,10 @@ namespace MacintoshBot
             //Get the needed variables
             var messageId = eventArgs.Message.Id;
             var role = await _groupRepository.GetRoleIdFromEmoji(eventArgs.Emoji.GetDiscordName(), guildId);
-            if (role.status != Status.Found)
-            {
-                return;
-            }
+            if (role.status != Status.Found) return;
             var reactionUser = eventArgs.User as DiscordMember;
-            
-            if(reactionUser == null || reactionUser.IsBot)
-            {
-                return;
-            }
+
+            if (reactionUser == null || reactionUser.IsBot) return;
             //Perform the role update
             var message = await _messageRepository.GetMessageId("role", guildId);
             if (message.status == Status.Found && messageId == message.messageId)
@@ -76,40 +63,31 @@ namespace MacintoshBot
                 await AssignNewUserRoles(joinedMember, guildId);
             }
         }
-        
+
         //Helper for creating a new user (OnMemberJoined).
         private async Task AssignNewUserRoles(DiscordMember member, ulong guildId)
         {
             //Create the user
             var createdUser = await _userRepository.Create(member.Id, guildId);
-            if (createdUser.status != Status.Created)
-            {
-                return;
-            }
-            
+            if (createdUser.status != Status.Created) return;
+
             //Get the scrub role
             var lowestRank = await _levelRoleRepository.GetLowestRank(guildId);
-            if (lowestRank.status != Status.Found)
-            {
-                return;
-            }
+            if (lowestRank.status != Status.Found) return;
 
             var discordRole = await _clientHandler.DiscordRoleFromId(_client, lowestRank.role.RoleId, guildId);
             await member.GrantRoleAsync(discordRole);
         }
-        
+
         //When a member leaves
         private async Task OnMemberRemoved(DiscordClient client, GuildMemberRemoveEventArgs eventArgs)
         {
             var leftUser = eventArgs.Member;
             var guildId = eventArgs.Guild.Id;
-            
+
             var status = await RemoveUser(leftUser, guildId);
-            if (status != Status.Deleted)
-            {
-                return;
-            }
-            
+            if (status != Status.Deleted) return;
+
             await NotifyOfMemberLeave(leftUser, guildId);
         }
 
@@ -117,23 +95,15 @@ namespace MacintoshBot
         {
             var message = RandomMemberLeaveMessage(member.DisplayName);
             var server = _client.Guilds.Values.FirstOrDefault(g => g.Id == guildId);
-            if (server == null)
-            {
-                return;
-            }
+            if (server == null) return;
             var newMemberChannel = await _channelRepository.Get("newmembers", guildId);
-            if (newMemberChannel.status != Status.Found)
-            {
-                return;
-            }
-            var newMemberDiscordChannel = server.Channels.Values.FirstOrDefault(c => c.Id == newMemberChannel.channel.ChannelId);
-            if (newMemberDiscordChannel == null)
-            {
-                return;
-            }
-            await newMemberDiscordChannel.SendMessageAsync(message); 
+            if (newMemberChannel.status != Status.Found) return;
+            var newMemberDiscordChannel =
+                server.Channels.Values.FirstOrDefault(c => c.Id == newMemberChannel.channel.ChannelId);
+            if (newMemberDiscordChannel == null) return;
+            await newMemberDiscordChannel.SendMessageAsync(message);
         }
-        
+
         private async Task OnGuildAvailable(DiscordClient client, GuildCreateEventArgs eventArgs)
         {
             var guildId = eventArgs.Guild.Id;
@@ -148,10 +118,7 @@ namespace MacintoshBot
                     RefName = "role"
                 };
                 var message = await _messageRepository.Create(roleMessage);
-                if (message.status != Status.Created)
-                {
-                    return;
-                }
+                if (message.status != Status.Created) return;
                 await _clientHandler.SelfAssignRoles(client, guildId);
             }
         }
@@ -167,7 +134,6 @@ namespace MacintoshBot
             {
                 var gainedXp = await _xpGrantModel.ExitVoiceChannel(eventArgs.User.Id, guildId);
             }
-            
         }
 
         //Helper for removing a user
@@ -189,7 +155,7 @@ namespace MacintoshBot
                 case 2:
                     return $"Bye bye {memberName}!";
                 default:
-                    return $"Thanks for the fun times {memberName}"; 
+                    return $"Thanks for the fun times {memberName}";
             }
         }
     }

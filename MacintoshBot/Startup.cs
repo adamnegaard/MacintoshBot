@@ -1,8 +1,4 @@
-﻿using System;
-using System.Configuration;
-using System.IO;
-using System.Net.Http;
-using DSharpPlus;
+﻿using DSharpPlus;
 using MacintoshBot.Entities;
 using MacintoshBot.Jobs;
 using MacintoshBot.Models.Channel;
@@ -15,33 +11,29 @@ using MacintoshBot.Models.User;
 using MacintoshBot.RoleUpdate;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.Hosting;
 using Quartz;
 using Quartz.Impl;
 using Quartz.Spi;
-using SteamWebAPI2.Interfaces;
 using SteamWebAPI2.Utilities;
 
 namespace MacintoshBot
 {
     public class Startup
     {
-        public IConfiguration Configuration { get; }
-        
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
         }
-        
+
+        public IConfiguration Configuration { get; }
+
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddHttpContextAccessor();
-            
+
             services.AddDbContext<IDiscordContext, DiscordContext>(options =>
             {
                 options.UseNpgsql(Configuration.GetConnectionString("DefaultConnection"));
@@ -56,39 +48,38 @@ namespace MacintoshBot
             services.AddScoped<IChannelRepository, ChannelRepository>();
             services.AddScoped<IFactRepository, FactRepository>();
             services.AddSingleton<ClientConfig>();
-            
+
             //Models
             services.AddScoped<IXpGrantModel, XpGrantModel>();
             services.AddScoped<IClientHandler, ClientHandler.ClientHandler>();
-            
+
             //Steam API related
             var webInterfaceFactory = new SteamWebInterfaceFactory(Configuration["Steam:ApiKey"]);
             services.AddSingleton<ISteamWebInterfaceFactory>(webInterfaceFactory);
 
-            services.AddSingleton<DiscordRestClient>(new DiscordRestClient(new DiscordConfiguration
+            services.AddSingleton(new DiscordRestClient(new DiscordConfiguration
             {
                 Token = Configuration.GetConnectionString("DiscordClientSecret"),
                 TokenType = TokenType.Bot,
-                AutoReconnect = true,
+                AutoReconnect = true
             }));
 
             //The discord bot
             services.AddDiscordService();
-              
+
             //Quarts scheduling services
             services.AddSingleton<IJobFactory, SingletonJobFactory>();
             services.AddSingleton<ISchedulerFactory, StdSchedulerFactory>();
-            
+
             //The timing for our jobs gets set inside the class of QuartzHostedService
             services.AddSingleton<RoleUpdateJob>();
             services.AddSingleton<DailyFactJob>();
-            
+
             services.AddHostedService<QuartzHostedService>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            
         }
     }
 }

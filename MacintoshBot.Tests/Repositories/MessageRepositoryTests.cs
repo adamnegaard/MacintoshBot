@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using MacintoshBot.Entities;
 using MacintoshBot.Models;
 using MacintoshBot.Models.Message;
@@ -11,13 +10,13 @@ namespace MacintoshBot.Tests.Repositories
     public class MessageRepositoryTests
     {
         private readonly IMessageRepository _messageRepository;
-        
+
         public MessageRepositoryTests()
         {
             //Connection
             var connection = new SqliteConnection("datasource=:memory:");
             connection.Open();
-            
+
             //Context
             var builder = new DbContextOptionsBuilder<DiscordContext>().UseSqlite(connection);
             var context = new DiscordTestContext(builder.Options);
@@ -33,7 +32,7 @@ namespace MacintoshBot.Tests.Repositories
             Assert.Equal(Status.Found, message.status);
             Assert.Equal(1u, message.messageId);
         }
-        
+
         [Fact]
         public async void GetOnNonExistingName()
         {
@@ -41,7 +40,7 @@ namespace MacintoshBot.Tests.Repositories
             Assert.Equal(Status.BadRequest, message.status);
             Assert.Equal(0u, message.messageId);
         }
-        
+
         [Fact]
         public async void GetOnNonExistingGuild()
         {
@@ -49,7 +48,7 @@ namespace MacintoshBot.Tests.Repositories
             Assert.Equal(Status.BadRequest, message.status);
             Assert.Equal(0u, message.messageId);
         }
-        
+
         [Fact]
         public async void CreateOnNonExisting()
         {
@@ -57,13 +56,13 @@ namespace MacintoshBot.Tests.Repositories
             {
                 RefName = "test",
                 GuildId = 3,
-                MessageId = 5,
+                MessageId = 5
             };
             var message = await _messageRepository.Create(messageCreate);
             Assert.Equal(Status.Created, message.status);
             Assert.Equal(5u, message.message.MessageId);
         }
-        
+
         [Fact]
         public async void CreateOnExisting()
         {
@@ -71,7 +70,7 @@ namespace MacintoshBot.Tests.Repositories
             {
                 RefName = "test",
                 GuildId = 2,
-                MessageId = 5,
+                MessageId = 5
             };
             var message = await _messageRepository.Create(messageCreate);
             Assert.Equal(Status.Conflict, message.status);

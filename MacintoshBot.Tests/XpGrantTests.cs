@@ -17,7 +17,7 @@ namespace MacintoshBot.Tests
             //Connection
             var connection = new SqliteConnection("datasource=:memory:");
             connection.Open();
-            
+
             //Context
             var builder = new DbContextOptionsBuilder<DiscordContext>().UseSqlite(connection);
             var context = new DiscordTestContext(builder.Options);
@@ -26,7 +26,7 @@ namespace MacintoshBot.Tests
             var userRepository = new UserRepository(context);
             _xpGrantModel = new XpGrantModel(userRepository);
         }
-        
+
         [Theory]
         [InlineData(-5, 4, 1, 1025)]
         [InlineData(-10, 1, 1, 648)]
@@ -36,9 +36,9 @@ namespace MacintoshBot.Tests
         public async Task TestXpGainedCorretly(int minutesAgo, ulong memberId, ulong guildId, int expected)
         {
             var beginTime = DateTime.Now.AddMinutes(minutesAgo);
-            
+
             var newXp = await _xpGrantModel.GetNewXpFromStartTime(beginTime, memberId, guildId);
-            
+
             Assert.Equal(expected, newXp);
         }
     }

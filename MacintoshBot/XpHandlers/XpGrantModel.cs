@@ -4,14 +4,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using MacintoshBot.Models;
 using MacintoshBot.Models.User;
-using Microsoft.CSharp.RuntimeBinder;
 
 namespace MacintoshBot
 {
     public class XpGrantModel : IXpGrantModel
     {
         private readonly IUserRepository _userRepository;
-        private HashSet<(ulong memberId,ulong guildId, DateTime time)> voiceTimeSet;
+        private readonly HashSet<(ulong memberId, ulong guildId, DateTime time)> voiceTimeSet;
 
         public XpGrantModel(IUserRepository userRepository)
         {
@@ -29,13 +28,11 @@ namespace MacintoshBot
         {
             var member = voiceTimeSet.FirstOrDefault(p => p.memberId == memberId && p.guildId == guildId);
             if (member.time.Equals(DateTime.MinValue))
-            {
                 //Exception should be thrown here
                 return 0;
-            }
 
-            var newXp = await GetNewXpFromStartTime(member.time, memberId, guildId); 
-            
+            var newXp = await GetNewXpFromStartTime(member.time, memberId, guildId);
+
             //Remove the user from the set timing it
             voiceTimeSet.Remove(member);
             return newXp;
@@ -47,10 +44,7 @@ namespace MacintoshBot
             if (startTime > now)
             {
                 var member = await _userRepository.Get(memberId, guildId);
-                if (member.status != Status.Found)
-                {
-                    return 0;
-                }
+                if (member.status != Status.Found) return 0;
 
                 return member.user.Xp;
             }

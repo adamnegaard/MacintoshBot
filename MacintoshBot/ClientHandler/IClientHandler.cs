@@ -1,8 +1,6 @@
-using System.Threading;
 using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.Entities;
-using MacintoshBot.Entities;
 using MacintoshBot.Models.Facts;
 using MacintoshBot.Models.Role;
 

@@ -10,13 +10,13 @@ namespace MacintoshBot.Tests.Repositories
     public class FactRepositoryTests
     {
         private readonly IFactRepository _factRepository;
-        
+
         public FactRepositoryTests()
         {
             //Connection
             var connection = new SqliteConnection("datasource=:memory:");
             connection.Open();
-            
+
             //Context
             var builder = new DbContextOptionsBuilder<DiscordContext>().UseSqlite(connection);
             var context = new DiscordTestContext(builder.Options);
@@ -33,7 +33,7 @@ namespace MacintoshBot.Tests.Repositories
             Assert.Equal("Fun fact 1", response.fact.Text);
             Assert.Equal(1, response.fact.Id);
         }
-        
+
         [Fact]
         public async void GetMostRecent()
         {
@@ -42,15 +42,14 @@ namespace MacintoshBot.Tests.Repositories
             Assert.Equal("Fun fact 3", response.fact.Text);
             Assert.Equal(3, response.fact.Id);
         }
-        
+
         [Fact]
         public async void Create()
         {
             var fact = await _factRepository.Create("Fun fact 4");
-            Assert.Equal(Status.Created,fact.status);
+            Assert.Equal(Status.Created, fact.status);
             Assert.Equal("Fun fact 4", fact.fact.Text);
             Assert.Equal(4, fact.fact.Id);
         }
-        
     }
 }

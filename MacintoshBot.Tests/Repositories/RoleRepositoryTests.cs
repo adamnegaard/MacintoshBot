@@ -13,13 +13,13 @@ namespace MacintoshBot.Tests.Repositories
     public class RoleRepositoryTests
     {
         private readonly ILevelRoleRepository _roleRepository;
-        
+
         public RoleRepositoryTests()
         {
             //Connection
             var connection = new SqliteConnection("datasource=:memory:");
             connection.Open();
-            
+
             //Context
             var builder = new DbContextOptionsBuilder<DiscordContext>().UseSqlite(connection);
             var context = new DiscordTestContext(builder.Options);
@@ -39,7 +39,7 @@ namespace MacintoshBot.Tests.Repositories
             Assert.Equal(1u, role.RoleId);
             Assert.Equal(0, role.Rank);
         }
-        
+
         [Fact]
         public async void GetOnNonExistingGuildByName()
         {
@@ -48,7 +48,7 @@ namespace MacintoshBot.Tests.Repositories
             var role = response.role;
             Assert.Null(role);
         }
-        
+
         [Fact]
         public async void GetOnNonExistingNameByName()
         {
@@ -69,7 +69,7 @@ namespace MacintoshBot.Tests.Repositories
             Assert.Equal(1u, role.RoleId);
             Assert.Equal(0, role.Rank);
         }
-        
+
         [Fact]
         public async void GetOnNonExistingRoleByRoleId()
         {
@@ -78,7 +78,7 @@ namespace MacintoshBot.Tests.Repositories
             var role = response.role;
             Assert.Null(role);
         }
-        
+
         [Fact]
         public async void GetOnNonExistingGuildByRoleId()
         {
@@ -103,7 +103,7 @@ namespace MacintoshBot.Tests.Repositories
             var role = response.role;
             Assert.Equal("scrub", role.RefName);
         }
-        
+
         [Fact]
         public async void CreateOnNonExisting()
         {
@@ -126,12 +126,12 @@ namespace MacintoshBot.Tests.Repositories
             var result1 = await _roleRepository.GetHighestRank(1);
             Assert.Equal(Status.Found, result1.status);
             Assert.Equal(2, result1.role.Rank);
-            
+
             var result2 = await _roleRepository.GetHighestRank(2);
             Assert.Equal(Status.Found, result2.status);
             Assert.Equal(1, result2.role.Rank);
         }
-        
+
         [Fact]
         public async void GetHighestRankInGuildOnIlllegal()
         {
@@ -139,19 +139,19 @@ namespace MacintoshBot.Tests.Repositories
             Assert.Equal(Status.BadRequest, result3.status);
             Assert.Null(result3.role);
         }
-        
+
         [Fact]
         public async void GetLowestRankInGuildOnLegal()
         {
             var result1 = await _roleRepository.GetLowestRank(1);
             Assert.Equal(Status.Found, result1.status);
             Assert.Equal(0, result1.role.Rank);
-            
+
             var result2 = await _roleRepository.GetLowestRank(2);
             Assert.Equal(Status.Found, result2.status);
             Assert.Equal(0, result2.role.Rank);
         }
-        
+
         [Fact]
         public async void GetLowestRankInGuildOnIllegal()
         {
@@ -170,7 +170,7 @@ namespace MacintoshBot.Tests.Repositories
             Assert.Equal(expectedStatus, result.status);
             Assert.Equal(expectedName, result.role.RefName);
         }
-        
+
         [Theory]
         [InlineData(3)]
         [InlineData(103)]
@@ -182,19 +182,17 @@ namespace MacintoshBot.Tests.Repositories
             Assert.Equal(Status.BadRequest, result.status);
             Assert.Null(result.role);
         }
-        
+
         [Fact]
         //Find a way to test with discord members
         public async Task GetRoleFromMember()
         {
-            
         }
-        
+
         [Fact]
         //Find a way to test with discord members
         public async Task GetRoleFromIllegalMember()
         {
-            
         }
 
         [Theory]
@@ -206,7 +204,7 @@ namespace MacintoshBot.Tests.Repositories
             Assert.Equal(Status.Found, response.status);
             Assert.Equal(nextRank, response.role.Rank);
         }
-        
+
         [Theory]
         [InlineData(-2)]
         [InlineData(2)]
@@ -229,7 +227,7 @@ namespace MacintoshBot.Tests.Repositories
             var response = await _roleRepository.GetAllLevelNext(currRank, 1);
             Assert.Equal(expectedSize, response.Count());
         }
-        
+
         [Theory]
         [InlineData(-1, 0)]
         [InlineData(0, 0)]
@@ -252,7 +250,7 @@ namespace MacintoshBot.Tests.Repositories
             Assert.Equal(Status.Found, calculatedDays.status);
             Assert.Equal(expectedDays, calculatedDays.days);
         }
-        
+
         [Theory]
         [InlineData(100)]
         [InlineData(5)]

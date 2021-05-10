@@ -9,6 +9,7 @@ namespace MacintoshBot.RoleUpdate
     public class SingletonJobFactory : IJobFactory
     {
         private readonly IServiceProvider _services;
+
         public SingletonJobFactory(IServiceProvider services)
         {
             _services = services;
@@ -21,7 +22,6 @@ namespace MacintoshBot.RoleUpdate
 
         public void ReturnJob(IJob job)
         {
-            
         }
     }
 }

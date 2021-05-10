@@ -13,23 +13,24 @@ using MacintoshBot.Models.Role;
 using MacintoshBot.Models.User;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+
 namespace MacintoshBot
 {
     public partial class Bot : IHostedService, IDisposable
     {
-        private readonly IServiceProvider _services;
-        private DiscordClient _client { get; set; }
-        private CommandsNextExtension _commands { get; set; }
-        private readonly IUserRepository _userRepository;
-        private readonly IGroupRepository _groupRepository;
-        private readonly IMessageRepository _messageRepository;
-        private readonly ILevelRoleRepository _levelRoleRepository;
         private readonly IChannelRepository _channelRepository;
-        private readonly IXpGrantModel _xpGrantModel;
         private readonly IClientHandler _clientHandler;
+        private readonly IGroupRepository _groupRepository;
+        private readonly ILevelRoleRepository _levelRoleRepository;
+        private readonly IMessageRepository _messageRepository;
+        private readonly IServiceProvider _services;
+        private readonly IUserRepository _userRepository;
+        private readonly IXpGrantModel _xpGrantModel;
 
-        public Bot(IServiceProvider services, DiscordClient client, IUserRepository userRepository, IGroupRepository groupRepository, 
-            IMessageRepository messageRepository, ILevelRoleRepository levelRoleRepository, IChannelRepository channelRepository, IXpGrantModel xpGrantModel, IClientHandler clientHandler)
+        public Bot(IServiceProvider services, DiscordClient client, IUserRepository userRepository,
+            IGroupRepository groupRepository,
+            IMessageRepository messageRepository, ILevelRoleRepository levelRoleRepository,
+            IChannelRepository channelRepository, IXpGrantModel xpGrantModel, IClientHandler clientHandler)
         {
             _services = services;
             _client = client;
@@ -40,19 +41,16 @@ namespace MacintoshBot
             _channelRepository = channelRepository;
             _xpGrantModel = xpGrantModel;
             _clientHandler = clientHandler;
-            
+
             //Get the prefix object
             var config = _services.GetService<ClientConfig>();
             if (config == null)
-            {
                 throw new InvalidOperationException(
                     "Add a ClientConfig to the dependencies");
-                    
-            }
 
             var commandsConfig = new CommandsNextConfiguration
             {
-                StringPrefixes = new [] {config.Prefix},
+                StringPrefixes = new[] {config.Prefix},
                 EnableDms = true,
                 EnableMentionPrefix = true,
                 Services = services
@@ -74,12 +72,14 @@ namespace MacintoshBot
             _commands.RegisterCommands<ManageCommands>();
             _commands.RegisterCommands<LevelCommands>();
             _commands.RegisterCommands<RandomCommands>();
-            
         }
 
-        private Task OnClientReady(DiscordClient client, ReadyEventArgs eventArgs)
+        private DiscordClient _client { get; }
+        private CommandsNextExtension _commands { get; }
+
+        public void Dispose()
         {
-            return Task.CompletedTask;
+            _client.Dispose();
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)
@@ -94,9 +94,9 @@ namespace MacintoshBot
             await _client.DisconnectAsync().ConfigureAwait(false);
         }
 
-        public void Dispose()
+        private Task OnClientReady(DiscordClient client, ReadyEventArgs eventArgs)
         {
-            _client.Dispose();
+            return Task.CompletedTask;
         }
     }
 }

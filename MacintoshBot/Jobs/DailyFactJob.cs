@@ -15,7 +15,7 @@ namespace MacintoshBot.Jobs
         {
             _services = services;
         }
-        
+
         public async Task Execute(IJobExecutionContext context)
         {
             using (var scope = _services.CreateScope())

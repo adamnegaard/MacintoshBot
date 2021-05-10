@@ -15,39 +15,35 @@ namespace MacintoshBot.Commands
     [System.ComponentModel.Description("Commands for linking various gaming profiles")]
     public class ConnectionCommands : BaseCommandModule
     {
-        private readonly IUserRepository _userRepository;
         private readonly ISteamUser _steamUser;
         private readonly ISteamUserStats _steamUserStats;
-        
+        private readonly IUserRepository _userRepository;
+
         public ConnectionCommands(IUserRepository userRepository, ISteamWebInterfaceFactory steamInterface)
         {
             _userRepository = userRepository;
             _steamUser = steamInterface.CreateSteamWebInterface<SteamUser>(new HttpClient());
             _steamUserStats = steamInterface.CreateSteamWebInterface<SteamUserStats>(new HttpClient());
         }
-        
+
         [Command(nameof(Link))]
         [Description("Link an account from a profile url")]
         public async Task Link(CommandContext ctx, Uri profilePage)
         {
             var guildId = ctx.Guild.Id;
             var memberId = ctx.Member.Id;
-            
+
             var userUpdate = new UserUpdateDTO
             {
                 GuildId = guildId,
-                UserId = memberId,
+                UserId = memberId
             };
             DiscordEmbedBuilder embed = null;
             if (profilePage.AbsoluteUri.ToLower().Contains("steam"))
-            {
                 embed = await LinkSteam(userUpdate, profilePage.AbsoluteUri);
-            }
 
             if (embed == null)
-            {
                 await ctx.Channel.SendMessageAsync($"Did not recognize the platform in the link: {profilePage}");
-            }
 
             await ctx.Channel.SendMessageAsync(MacintoshEmbed.Create(embed));
         }
@@ -67,11 +63,9 @@ namespace MacintoshBot.Commands
                     var steamId = profile.Data;
                     userUpdate.SteamId = steamId;
                     var (status, user) = await _userRepository.Update(userUpdate);
-                    if (status == Status.Updated)
-                    {
-                        return GetSteamSuccess(steamId);
-                    }
+                    if (status == Status.Updated) return GetSteamSuccess(steamId);
                 }
+
                 return GetInvalidSteamFormat();
             }
             catch (HttpRequestException)
@@ -82,28 +76,30 @@ namespace MacintoshBot.Commands
 
         public static DiscordEmbedBuilder GetSteamSuccess(ulong steamId)
         {
-            return new DiscordEmbedBuilder
+            return new()
             {
                 Title = "Success",
-                Description = $"Successfully linked your Steam ID: {steamId} to your profile",
+                Description = $"Successfully linked your Steam ID: {steamId} to your profile"
             };
         }
-        
+
         public static DiscordEmbedBuilder GetSteamError()
         {
-            return new DiscordEmbedBuilder
+            return new()
             {
                 Title = "Error",
-                Description = $"Error when linking your Steam account. Please make sure it is public [here](https://steamcommunity.com/my/edit/settings)",
+                Description =
+                    "Error when linking your Steam account. Please make sure it is public [here](https://steamcommunity.com/my/edit/settings)"
             };
         }
 
         private static DiscordEmbedBuilder GetInvalidSteamFormat()
         {
-            return new DiscordEmbedBuilder
+            return new()
             {
                 Title = "Error",
-                Description = $"Unknown error trying to link your Steam account. Please make sure the URL is formatted properly",
+                Description =
+                    "Unknown error trying to link your Steam account. Please make sure the URL is formatted properly"
             };
         }
     }

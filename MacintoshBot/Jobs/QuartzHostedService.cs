@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using MacintoshBot.Jobs;
 using Microsoft.Extensions.Hosting;
@@ -11,19 +10,21 @@ namespace MacintoshBot.RoleUpdate
     //Followed tutorial at https://andrewlock.net/creating-a-quartz-net-hosted-service-with-asp-net-core/
     public class QuartzHostedService : IHostedService
     {
-        private readonly ISchedulerFactory _schedulerFactory;
+        private readonly DailyFactJob _dailyFactJob;
         private readonly IJobFactory _jobFactory;
-        private readonly RoleUpdateJob _roleUpdateJob; 
-        private readonly DailyFactJob _dailyFactJob; 
+        private readonly RoleUpdateJob _roleUpdateJob;
+        private readonly ISchedulerFactory _schedulerFactory;
 
         public QuartzHostedService(
-            ISchedulerFactory schedulerFactory, IJobFactory jobFactory, RoleUpdateJob roleUpdateJob, DailyFactJob dailyFactJob)
+            ISchedulerFactory schedulerFactory, IJobFactory jobFactory, RoleUpdateJob roleUpdateJob,
+            DailyFactJob dailyFactJob)
         {
             _schedulerFactory = schedulerFactory;
             _jobFactory = jobFactory;
             _roleUpdateJob = roleUpdateJob;
             _dailyFactJob = dailyFactJob;
         }
+
         public IScheduler Scheduler { get; set; }
 
         public async Task StartAsync(CancellationToken cancellationToken)
@@ -36,7 +37,7 @@ namespace MacintoshBot.RoleUpdate
                 .WithIdentity(_roleUpdateJob.GetType().FullName)
                 .WithDescription(_roleUpdateJob.GetType().Name)
                 .Build();
-            
+
             var roleUpdateTrigger = TriggerBuilder
                 .Create()
                 .WithIdentity($"{_roleUpdateJob.GetType()}.trigger")
@@ -45,14 +46,14 @@ namespace MacintoshBot.RoleUpdate
                     CronScheduleBuilder.DailyAtHourAndMinute(0, 0))
                 .Build();
             await Scheduler.ScheduleJob(roleUpdateJob, roleUpdateTrigger, cancellationToken);
-            
+
             //Daily facts
             var dailyFactJob = JobBuilder
                 .Create(_dailyFactJob.GetType())
                 .WithIdentity(_dailyFactJob.GetType().FullName)
                 .WithDescription(_dailyFactJob.GetType().Name)
                 .Build();
-            
+
             var dailyFactTrigger = TriggerBuilder
                 .Create()
                 .WithIdentity($"{_dailyFactJob.GetType()}.trigger")
@@ -67,10 +68,7 @@ namespace MacintoshBot.RoleUpdate
 
         public async Task StopAsync(CancellationToken cancellationToken)
         {
-            if (Scheduler != null)
-            {
-                await Scheduler?.Shutdown(cancellationToken);
-            }
+            if (Scheduler != null) await Scheduler?.Shutdown(cancellationToken);
         }
     }
 }

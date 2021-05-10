@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -17,12 +15,13 @@ namespace MacintoshBot.Commands
     [Description("Random and fun commands!")]
     public class RandomCommands : BaseCommandModule
     {
-        
-        private readonly IFileRepository _fileRepository;
-        private readonly IFactRepository _factRepository;
         private readonly IClientHandler _clientHandler;
+        private readonly IFactRepository _factRepository;
 
-        public RandomCommands(IFileRepository fileRepository, IFactRepository factRepository, IClientHandler clientHandler)
+        private readonly IFileRepository _fileRepository;
+
+        public RandomCommands(IFileRepository fileRepository, IFactRepository factRepository,
+            IClientHandler clientHandler)
         {
             _fileRepository = fileRepository;
             _factRepository = factRepository;
@@ -31,7 +30,8 @@ namespace MacintoshBot.Commands
 
         [Command("roll")]
         [Description("Roll a dice from 1-6")]
-        public async Task Roll(CommandContext ctx, [Description("(Optional) min value")] int min = 1, [Description("(Optional) max value")] int max = 6)
+        public async Task Roll(CommandContext ctx, [Description("(Optional) min value")] int min = 1,
+            [Description("(Optional) max value")] int max = 6)
         {
             var random = new Random();
             await ctx.Channel.SendMessageAsync($"{ctx.Member.DisplayName} rolled: {random.Next(min, max)}");
@@ -50,7 +50,7 @@ namespace MacintoshBot.Commands
 
             await _clientHandler.CreateFactMessage(ctx.Client, fact.fact, ctx.Channel);
         }
-        
+
         [Command("Files")]
         [Description("See the list of available files")]
         public async Task Files(CommandContext ctx)
@@ -62,6 +62,7 @@ namespace MacintoshBot.Commands
                 await ctx.Channel.SendMessageAsync("Something went wrong");
                 return;
             }
+
             var builder = new StringBuilder();
             builder.Append("**The list of available files is:**\n");
             foreach (var fileTitle in files)
@@ -70,18 +71,20 @@ namespace MacintoshBot.Commands
                 if (!files.Last().Equals(fileTitle)) builder.Append(", ");
             }
 
-            await ctx.Member.SendMessageAsync(builder.ToString()); 
+            await ctx.Member.SendMessageAsync(builder.ToString());
         }
-        
+
         [Command("Get")]
         [Description("Show a file based on its string representation")]
-        public async Task Get(CommandContext ctx, [Description("Name of file")] [RemainingText] string fileTitle)
+        public async Task Get(CommandContext ctx, [Description("Name of file")] [RemainingText]
+            string fileTitle)
         {
             var guildId = ctx.Guild.Id;
             var response = await _fileRepository.Get(fileTitle, guildId);
             if (response.status != Status.Found)
             {
-                await ctx.Channel.SendMessageAsync($"Could not find the file {fileTitle} in the database, try `?files`");
+                await ctx.Channel.SendMessageAsync(
+                    $"Could not find the file {fileTitle} in the database, try `?files`");
                 return;
             }
 
@@ -89,14 +92,15 @@ namespace MacintoshBot.Commands
             var imageEmbed = new DiscordEmbedBuilder
             {
                 Title = file.Title,
-                ImageUrl = file.Location,
+                ImageUrl = file.Location
             };
             await ctx.Channel.SendMessageAsync(MacintoshEmbed.Create(imageEmbed));
         }
 
         [Command("AddFile")]
         [Description("Adds an file to the available files on the server")]
-        public async Task AddFile(CommandContext ctx, [Description("Name of file")] [RemainingText] string fileTitle)
+        public async Task AddFile(CommandContext ctx, [Description("Name of file")] [RemainingText]
+            string fileTitle)
         {
             var message = ctx.Message;
             var guildId = ctx.Guild.Id;
@@ -106,6 +110,7 @@ namespace MacintoshBot.Commands
                 await ctx.Channel.SendMessageAsync("Please attach something!");
                 return;
             }
+
             foreach (var attachment in attachments)
             {
                 var file = new FileDTO
@@ -125,6 +130,5 @@ namespace MacintoshBot.Commands
                 await ctx.Channel.SendMessageAsync($"Added the file under the name {fileTitle}");
             }
         }
-        
     }
 }

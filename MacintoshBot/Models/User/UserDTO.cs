@@ -1,7 +1,4 @@
-﻿using System;
-using MacintoshBot.Entities;
-
-namespace MacintoshBot.Models.User
+﻿namespace MacintoshBot.Models.User
 {
     public class UserDTO
     {

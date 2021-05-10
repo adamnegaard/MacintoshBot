@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using DSharpPlus.Entities;
 
 namespace MacintoshBot.Entities
 {
@@ -7,10 +6,9 @@ namespace MacintoshBot.Entities
     {
         public string RefName { get; set; }
         public ulong GuildId { get; set; }
-        [Required]
-        public ulong RoleId { get; set; }
-        [Required]
-        public int Rank { get; set; }
-        
+
+        [Required] public ulong RoleId { get; set; }
+
+        [Required] public int Rank { get; set; }
     }
 }

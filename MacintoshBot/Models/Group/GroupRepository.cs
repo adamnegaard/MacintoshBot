@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using DSharpPlus.Entities;
 using MacintoshBot.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -19,32 +17,28 @@ namespace MacintoshBot.Models.Group
 
         public async Task<(Status status, GroupDTO group)> Get(string name, ulong guildId)
         {
-            var group = await _context.Groups.FirstOrDefaultAsync(g => g.Name.ToLower().Equals(name.ToLower()) && g.GuildId == guildId);
-            
-            if (group == null)
-            {
-                return (Status.BadRequest, null);
-            }
+            var group = await _context.Groups.FirstOrDefaultAsync(g =>
+                g.Name.ToLower().Equals(name.ToLower()) && g.GuildId == guildId);
+
+            if (group == null) return (Status.BadRequest, null);
 
             return (Status.Found, new GroupDTO
             {
-                Name = group .Name,
+                Name = group.Name,
                 GuildId = guildId,
-                FullName = group .FullName,
-                IsGame = group .IsGame,
-                EmojiName = group .EmojiName,
-                DiscordRoleId = group .DiscordRoleId
+                FullName = group.FullName,
+                IsGame = group.IsGame,
+                EmojiName = group.EmojiName,
+                DiscordRoleId = group.DiscordRoleId
             });
         }
 
         public async Task<(Status status, ulong roleId)> GetRoleIdFromEmoji(string emojiName, ulong guildId)
         {
-            var group = await _context.Groups.FirstOrDefaultAsync(g => g.EmojiName.Equals(emojiName) && g.GuildId == guildId);
-            
-            if (group == null)
-            {
-                return (Status.BadRequest, 0);
-            }
+            var group = await _context.Groups.FirstOrDefaultAsync(g =>
+                g.EmojiName.Equals(emojiName) && g.GuildId == guildId);
+
+            if (group == null) return (Status.BadRequest, 0);
 
             return (Status.Found, group.DiscordRoleId);
         }
@@ -65,10 +59,7 @@ namespace MacintoshBot.Models.Group
         public async Task<(Status status, GroupDTO group)> Create(GroupDTO game)
         {
             var existingGroup = await Get(game.Name, game.GuildId);
-            if (existingGroup.status == Status.Found)
-            {
-                return (Status.Conflict, existingGroup.group);
-            }
+            if (existingGroup.status == Status.Found) return (Status.Conflict, existingGroup.@group);
             var groupCreate = new Entities.Group
             {
                 Name = game.Name,
@@ -78,14 +69,11 @@ namespace MacintoshBot.Models.Group
                 EmojiName = game.EmojiName,
                 DiscordRoleId = game.DiscordRoleId
             };
-            
+
             var createdChannel = await _context.Groups.AddAsync(groupCreate);
             await _context.SaveChangesAsync();
 
-            if (createdChannel.Entity == null)
-            {
-                return (Status.Error, null);
-            }
+            if (createdChannel.Entity == null) return (Status.Error, null);
             return (Status.Created, new GroupDTO
             {
                 Name = createdChannel.Entity.Name,
@@ -99,13 +87,11 @@ namespace MacintoshBot.Models.Group
 
         public async Task<Status> Delete(string name, ulong guildId)
         {
-            var group = await _context.Groups.FirstOrDefaultAsync(g => g.Name.ToLower().Equals(name.ToLower()) && g.GuildId == guildId);
-            
-            if (group == null)
-            {
-                return Status.BadRequest;
-            }
-            
+            var group = await _context.Groups.FirstOrDefaultAsync(g =>
+                g.Name.ToLower().Equals(name.ToLower()) && g.GuildId == guildId);
+
+            if (group == null) return Status.BadRequest;
+
             _context.Groups.Remove(group);
             await _context.SaveChangesAsync();
             return Status.Deleted;

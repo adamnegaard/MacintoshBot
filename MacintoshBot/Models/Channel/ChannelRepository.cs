@@ -12,15 +12,13 @@ namespace MacintoshBot.Models.Channel
         {
             _context = context;
         }
-        
+
         public async Task<(Status status, ChannelDTO channel)> Get(string refName, ulong guildId)
         {
-            var channel = await _context.Channels.FirstOrDefaultAsync(c => c.RefName.ToLower().Equals(refName.ToLower()) && c.GuildId == guildId);
-            if (channel == null)
-            {
-                return (Status.BadRequest, null);
-            }
-            return(Status.Found, new ChannelDTO
+            var channel = await _context.Channels.FirstOrDefaultAsync(c =>
+                c.RefName.ToLower().Equals(refName.ToLower()) && c.GuildId == guildId);
+            if (channel == null) return (Status.BadRequest, null);
+            return (Status.Found, new ChannelDTO
             {
                 RefName = channel.RefName,
                 GuildId = channel.GuildId,
@@ -31,31 +29,25 @@ namespace MacintoshBot.Models.Channel
         public async Task<(Status status, ChannelDTO channel)> Create(ChannelDTO channel)
         {
             var existingChannel = await Get(channel.RefName, channel.GuildId);
-            if (existingChannel.status == Status.Found)
-            {
-                return (Status.Conflict, existingChannel.channel);
-            }
-            
+            if (existingChannel.status == Status.Found) return (Status.Conflict, existingChannel.channel);
+
             var channelCreate = new Entities.Channel
             {
                 RefName = channel.RefName,
                 GuildId = channel.GuildId,
-                ChannelId = channel.ChannelId,
+                ChannelId = channel.ChannelId
             };
-            
+
             var createdChannel = await _context.Channels.AddAsync(channelCreate);
             await _context.SaveChangesAsync();
 
-            if (createdChannel.Entity == null)
-            {
-                return (Status.Error, null);
-            }
-            
+            if (createdChannel.Entity == null) return (Status.Error, null);
+
             return (Status.Created, new ChannelDTO
             {
                 ChannelId = createdChannel.Entity.ChannelId,
                 GuildId = createdChannel.Entity.GuildId,
-                RefName = createdChannel.Entity.RefName,
+                RefName = createdChannel.Entity.RefName
             });
         }
     }

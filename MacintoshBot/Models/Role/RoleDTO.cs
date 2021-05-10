@@ -1,6 +1,4 @@
-﻿using DSharpPlus.Entities;
-
-namespace MacintoshBot.Models.Role
+﻿namespace MacintoshBot.Models.Role
 {
     public class RoleDTO
     {

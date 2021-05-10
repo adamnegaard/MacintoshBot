@@ -1,7 +1,4 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
-
-namespace MacintoshBot.Entities
+﻿namespace MacintoshBot.Entities
 {
     public class User
     {

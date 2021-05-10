@@ -1,4 +1,3 @@
-using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using MacintoshBot.Models.User;
 
