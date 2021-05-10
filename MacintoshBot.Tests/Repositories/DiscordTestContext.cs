@@ -1,7 +1,7 @@
 ﻿using MacintoshBot.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace MacintoshBot.Tests
+namespace MacintoshBot.Tests.Repositories
 {
     public class DiscordTestContext : DiscordContext
     {

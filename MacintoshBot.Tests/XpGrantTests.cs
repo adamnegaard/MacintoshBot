@@ -2,6 +2,8 @@ using System;
 using System.Threading.Tasks;
 using MacintoshBot.Entities;
 using MacintoshBot.Models.User;
+using MacintoshBot.Tests.Repositories;
+using MacintoshBot.XpHandlers;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Xunit;

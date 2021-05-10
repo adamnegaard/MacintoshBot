@@ -5,7 +5,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 
-namespace MacintoshBot.Tests
+namespace MacintoshBot.Tests.Repositories
 {
     public class ChannelRepositoryTests
     {

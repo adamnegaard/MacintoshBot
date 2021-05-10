@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using MacintoshBot.Models;
 using MacintoshBot.Models.User;
 
-namespace MacintoshBot
+namespace MacintoshBot.XpHandlers
 {
     public class XpGrantModel : IXpGrantModel
     {

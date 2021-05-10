@@ -1,4 +1,5 @@
 ﻿using DSharpPlus;
+using MacintoshBot.ClientHandler;
 using MacintoshBot.Entities;
 using MacintoshBot.Jobs;
 using MacintoshBot.Models.Channel;
@@ -8,7 +9,7 @@ using MacintoshBot.Models.Group;
 using MacintoshBot.Models.Message;
 using MacintoshBot.Models.Role;
 using MacintoshBot.Models.User;
-using MacintoshBot.RoleUpdate;
+using MacintoshBot.XpHandlers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;

@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace MacintoshBot
+namespace MacintoshBot.XpHandlers
 {
     public interface IXpGrantModel
     {

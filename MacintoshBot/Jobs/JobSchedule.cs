@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MacintoshBot.RoleUpdate
+namespace MacintoshBot.Jobs
 {
     //Followed tutorial at https://andrewlock.net/creating-a-quartz-net-hosted-service-with-asp-net-core/
     public class JobSchedule

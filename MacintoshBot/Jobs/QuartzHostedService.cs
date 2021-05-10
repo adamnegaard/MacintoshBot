@@ -1,11 +1,10 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using MacintoshBot.Jobs;
 using Microsoft.Extensions.Hosting;
 using Quartz;
 using Quartz.Spi;
 
-namespace MacintoshBot.RoleUpdate
+namespace MacintoshBot.Jobs
 {
     //Followed tutorial at https://andrewlock.net/creating-a-quartz-net-hosted-service-with-asp-net-core/
     public class QuartzHostedService : IHostedService

@@ -2,6 +2,7 @@
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
+using MacintoshBot.ClientHandler;
 using MacintoshBot.Models;
 using MacintoshBot.Models.Role;
 using MacintoshBot.Models.User;

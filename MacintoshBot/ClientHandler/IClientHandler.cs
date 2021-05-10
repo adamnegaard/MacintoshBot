@@ -4,7 +4,7 @@ using DSharpPlus.Entities;
 using MacintoshBot.Models.Facts;
 using MacintoshBot.Models.Role;
 
-namespace MacintoshBot
+namespace MacintoshBot.ClientHandler
 {
     public interface IClientHandler
     {

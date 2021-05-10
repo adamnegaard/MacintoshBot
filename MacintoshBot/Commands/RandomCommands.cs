@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
+using MacintoshBot.ClientHandler;
 using MacintoshBot.Models;
 using MacintoshBot.Models.Facts;
 using MacintoshBot.Models.File;

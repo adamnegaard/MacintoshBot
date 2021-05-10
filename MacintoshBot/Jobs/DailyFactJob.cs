@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using DSharpPlus;
+using MacintoshBot.ClientHandler;
 using Microsoft.Extensions.DependencyInjection;
 using Quartz;
 

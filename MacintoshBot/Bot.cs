@@ -5,12 +5,14 @@ using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
+using MacintoshBot.ClientHandler;
 using MacintoshBot.Commands;
 using MacintoshBot.Models.Channel;
 using MacintoshBot.Models.Group;
 using MacintoshBot.Models.Message;
 using MacintoshBot.Models.Role;
 using MacintoshBot.Models.User;
+using MacintoshBot.XpHandlers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
