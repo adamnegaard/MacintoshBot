@@ -154,6 +154,9 @@ namespace MacintoshBot.ClientHandler
                     //check if it's a new role (but since it might be an old role, we need to check if it's an upgrade and not a downgrade
                     var upgradeFromCurrRole = await _levelRoleRepository.GetLevelNext(levelRole.role.Rank, guildId);
                     if (upgradeFromCurrRole.status != Status.Found)
+                    {
+                        continue;
+                    }
                         //Do also a null check
                         if (levelRole.role.RoleId != nextMemberRole.role.RoleId && upgradeFromCurrRole.role != null &&
                             nextMemberRole.role.RoleId == upgradeFromCurrRole.role.RoleId)
