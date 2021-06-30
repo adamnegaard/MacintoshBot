@@ -42,7 +42,7 @@ namespace MacintoshBot.Jobs
                 .WithIdentity($"{_roleUpdateJob.GetType()}.trigger")
                 .WithSchedule(
                     //This is where the timing for the schedule gets set, right now every day at 00:00 (midnight)
-                    CronScheduleBuilder.DailyAtHourAndMinute(0, 0))
+                    CronScheduleBuilder.DailyAtHourAndMinute(17, 16))
                 .Build();
             await Scheduler.ScheduleJob(roleUpdateJob, roleUpdateTrigger, cancellationToken);
 

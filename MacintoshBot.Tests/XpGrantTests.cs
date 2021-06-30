@@ -30,10 +30,10 @@ namespace MacintoshBot.Tests
         }
 
         [Theory]
-        [InlineData(-5, 4, 1, 1025)]
-        [InlineData(-10, 1, 1, 648)]
-        [InlineData(-100, 2, 1, 500)]
-        [InlineData(-567, 2, 2, 2835)]
+        [InlineData(-5, 4, 1, 1005)]
+        [InlineData(-10, 1, 1, 608)]
+        [InlineData(-100, 2, 1, 100)]
+        [InlineData(-567, 2, 2, 567)]
         [InlineData(10, 3, 1, 95)]
         public async Task TestXpGainedCorretly(int minutesAgo, ulong memberId, ulong guildId, int expected)
         {
