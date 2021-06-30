@@ -7,19 +7,18 @@
   </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="DSharpPlus" Version="4.0.1" />
-      <PackageReference Include="DSharpPlus.CommandsNext" Version="4.0.1" />
-      <PackageReference Include="DSharpPlus.Interactivity" Version="4.0.1" />
-      <PackageReference Include="DSharpPlus.Rest" Version="4.0.1" />
-      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.3" />
-      <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="5.0.3">
+      <PackageReference Include="DSharpPlus" Version="4.1.0-nightly-00908" />
+      <PackageReference Include="DSharpPlus.CommandsNext" Version="4.1.0-nightly-00908" />
+      <PackageReference Include="DSharpPlus.Interactivity" Version="4.1.0-nightly-00908" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.7" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="5.0.7">
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       </PackageReference>
       <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="5.0.0" />
-        <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="5.0.0" />
-        <PackageReference Include="Quartz" Version="3.2.4" />
+        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="5.0.7" />
+        <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="5.0.7" />
+        <PackageReference Include="Quartz" Version="3.3.2" />
         <PackageReference Include="SteamWebAPI2" Version="4.3.0" />
     </ItemGroup>
 
