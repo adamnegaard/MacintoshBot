@@ -229,8 +229,8 @@ namespace MacintoshBot.Tests.Repositories
         }
 
         [Theory]
-        [InlineData(-50, 49)]
-        [InlineData(-100, 99)]
+        [InlineData(-50, 50)]
+        [InlineData(-100, 100)]
         public void GetDays(int days, int expectedDays)
         {
             var joined = DateTime.Now.AddDays(days);
