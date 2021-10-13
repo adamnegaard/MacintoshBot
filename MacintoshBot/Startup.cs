@@ -57,8 +57,7 @@ namespace MacintoshBot
             //Steam API related
             var webInterfaceFactory = new SteamWebInterfaceFactory(Configuration["Steam:ApiKey"]);
             services.AddSingleton<ISteamWebInterfaceFactory>(webInterfaceFactory);
-
-
+            
             //The discord bot
             services.AddDiscordService();
 
