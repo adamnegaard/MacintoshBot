@@ -30,12 +30,6 @@ namespace MacintoshBot.SteamStats
         [JsonProperty(PropertyName = "arrow_hit_player")]
         public double ArrowsHitPlayer { get; private set; }
 
-        [JsonProperty(PropertyName = "harvest.stones")]
-        public double StonesHarvested { get; private set; }
-
-        [JsonProperty(PropertyName = "harvest.wood")]
-        public double WoodHarvested { get; private set; }
-
         [JsonProperty(PropertyName = "headshot")]
         public double HeadShots { get; private set; }
 

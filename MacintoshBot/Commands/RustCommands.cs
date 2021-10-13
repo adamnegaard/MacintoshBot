@@ -89,9 +89,6 @@ namespace MacintoshBot.Commands
 
                 discordEmbed.AddField("Total hours", $"{Math.Round(rustGame.PlaytimeForever.TotalHours)}");
 
-                discordEmbed.AddField("Stones harvested", $"{rustStats.StonesHarvested}", true);
-                discordEmbed.AddField("Wood harvested", $"{rustStats.WoodHarvested}", true);
-
                 await loadingMessage.ModifyAsync(MacintoshEmbed.Create(discordEmbed));
             }
             catch (HttpRequestException)
