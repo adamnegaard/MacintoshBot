@@ -9,7 +9,6 @@ using MacintoshBot.Models.User;
 
 namespace MacintoshBot.Commands
 {
-    //[Group("Level")]
     [Description("Commands related to your server level")]
     public class LevelCommands : BaseCommandModule
     {
@@ -25,7 +24,7 @@ namespace MacintoshBot.Commands
             _clientHandler = clientHandler;
         }
 
-        [Command("level")]
+        [Command(nameof(Level))]
         [Description("See your current level and how many days you have been a member of the server")]
         public async Task Level(CommandContext ctx, [Description("Member to see level of (empty if yourself)")]
             DiscordMember member = null)

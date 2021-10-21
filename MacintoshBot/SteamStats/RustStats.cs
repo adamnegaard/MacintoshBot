@@ -6,17 +6,10 @@ using Steam.Models.SteamPlayer;
 
 namespace MacintoshBot.SteamStats
 {
-    public class RustStats
+    public class RustStats : SteamStats
     {
-        public RustStats(IEnumerable<UserStatModel> stats)
-        {
-            foreach (var stat in stats)
-            {
-                var property = GetType().GetProperties().FirstOrDefault(p =>
-                    p.GetCustomAttribute<JsonPropertyAttribute>().PropertyName.Equals(stat.Name));
-                if (property != null && property.CanWrite) property.SetValue(this, stat.Value, null);
-            }
-        }
+        public RustStats(IEnumerable<UserStatModel> stats) : base(stats)
+        { }
 
         [JsonProperty(PropertyName = "kill_player")]
         public double Kills { get; private set; }
@@ -33,6 +26,6 @@ namespace MacintoshBot.SteamStats
         [JsonProperty(PropertyName = "headshot")]
         public double HeadShots { get; private set; }
 
-        [JsonProperty(PropertyName = "kd")] public double KD => Kills / Deaths;
+        public double KD => Kills / Deaths;
     }
 }

@@ -12,7 +12,7 @@ using SteamWebAPI2.Utilities;
 
 namespace MacintoshBot.Commands
 {
-    [System.ComponentModel.Description("Commands for linking various gaming profiles")]
+    [Description("Commands for linking various gaming profiles")]
     public class ConnectionCommands : BaseCommandModule
     {
         private readonly ISteamUser _steamUser;

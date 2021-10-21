@@ -15,7 +15,6 @@ using MacintoshBot.Models.Role;
 
 namespace MacintoshBot.Commands
 {
-    //[Group("Management")]
     [Description("Roles related to management (Only for admins and moderators)")]
     [RequirePermissions(Permissions.ManageRoles)]
     public class ManageCommands : BaseCommandModule
@@ -37,7 +36,7 @@ namespace MacintoshBot.Commands
             _channelRepository = channelRepository;
         }
 
-        [Command("MakeMod")]
+        [Command(nameof(MakeMod))]
         [Description("Make a member moderator")]
         [RequirePermissions(Permissions.Administrator)]
         public async Task MakeMod(CommandContext ctx, [Description("Discord member to make moderator")]
@@ -61,7 +60,7 @@ namespace MacintoshBot.Commands
             await ctx.Channel.SendMessageAsync($"Made {member.Mention} a moderator!");
         }
 
-        [Command("UnMod")]
+        [Command(nameof(UnMod))]
         [Description("Make a member moderator")]
         [RequirePermissions(Permissions.Administrator)]
         public async Task UnMod(CommandContext ctx, [Description("Discord member to make moderator")]
@@ -85,7 +84,7 @@ namespace MacintoshBot.Commands
             await ctx.Channel.SendMessageAsync($"Revoked the moderator role from {member.Mention}");
         }
 
-        [Command("grantrole")]
+        [Command(nameof(GrantRole))]
         [Description("Grant a role to a member based on their id")]
         [RequirePermissions(Permissions.ManageRoles)]
         public async Task GrantRole(CommandContext ctx, [Description("Discord member to assign role")]
@@ -110,10 +109,10 @@ namespace MacintoshBot.Commands
             }
         }
 
-        [Command("groups")]
+        [Command(nameof(Groups))]
         [Description("Get a list of all groups supported by the database")]
         [RequirePermissions(Permissions.Administrator)]
-        public async Task GetGroups(CommandContext ctx)
+        public async Task Groups(CommandContext ctx)
         {
             var guildId = ctx.Guild.Id;
             //Get the groups
@@ -135,7 +134,7 @@ namespace MacintoshBot.Commands
             await ctx.Member.SendMessageAsync(builder.ToString());
         }
 
-        [Command("CreateGame")]
+        [Command(nameof(CreateGame))]
         [Description(
             "Create roles and channels for a new game\nInstructions:\n1. Set up a new emoji for the given role")]
         [RequirePermissions(Permissions.Administrator)]
@@ -150,7 +149,7 @@ namespace MacintoshBot.Commands
             await CreateGroup(ctx, emoji, name, true, fullName);
         }
 
-        [Command("CreateGroup")]
+        [Command(nameof(CreateGroup))]
         [Description(
             "Create roles and channels for a new group\nInstructions:\n1. Set up a new emoji for the given role")]
         [RequirePermissions(Permissions.Administrator)]
@@ -240,7 +239,7 @@ namespace MacintoshBot.Commands
                 $"Done! Created channel {channel} for {role.Mention}'s.\nGet access to the channel by reacting with {emoji} in {rolesChannel.Mention}.");
         }
 
-        [Command("removegroup")]
+        [Command(nameof(RemoveGroup))]
         [Description("Remove roles and channels for a group")]
         [RequirePermissions(Permissions.Administrator)]
         public async Task RemoveGroup(CommandContext ctx, [Description("Abreviation of the group")]

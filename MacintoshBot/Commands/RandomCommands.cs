@@ -29,16 +29,16 @@ namespace MacintoshBot.Commands
             _clientHandler = clientHandler;
         }
 
-        [Command("roll")]
+        [Command(nameof(Roll))]
         [Description("Roll a dice from 1-6")]
         public async Task Roll(CommandContext ctx, [Description("(Optional) min value")] int min = 1,
-            [Description("(Optional) max value")] int max = 6)
+            [Description("(Optional) max value")] int max = 7)
         {
             var random = new Random();
             await ctx.Channel.SendMessageAsync($"{ctx.Member.DisplayName} rolled: {random.Next(min, max)}");
         }
 
-        [Command("fact")]
+        [Command(nameof(Fact))]
         [Description("Get on of the facts from the #fact channel")]
         public async Task Fact(CommandContext ctx, [Description("Fact number")] int num = 0)
         {
@@ -52,7 +52,7 @@ namespace MacintoshBot.Commands
             await _clientHandler.CreateFactMessage(ctx.Client, fact.fact, ctx.Channel);
         }
 
-        [Command("Files")]
+        [Command(nameof(Files))]
         [Description("See the list of available files")]
         public async Task Files(CommandContext ctx)
         {
@@ -75,7 +75,7 @@ namespace MacintoshBot.Commands
             await ctx.Member.SendMessageAsync(builder.ToString());
         }
 
-        [Command("Get")]
+        [Command(nameof(Get))]
         [Description("Show a file based on its string representation")]
         public async Task Get(CommandContext ctx, [Description("Name of file")] [RemainingText]
             string fileTitle)
@@ -98,7 +98,7 @@ namespace MacintoshBot.Commands
             await ctx.Channel.SendMessageAsync(MacintoshEmbed.Create(imageEmbed));
         }
 
-        [Command("AddFile")]
+        [Command(nameof(AddFile))]
         [Description("Adds an file to the available files on the server")]
         public async Task AddFile(CommandContext ctx, [Description("Name of file")] [RemainingText]
             string fileTitle)

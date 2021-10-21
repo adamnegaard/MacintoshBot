@@ -16,85 +16,35 @@ namespace MacintoshBot.Commands
     public class RustCommands : SteamCommandBase
     {
         private readonly uint rustGameId = 252490;
+        private readonly string rustGameName = "Rust";
 
         public RustCommands(IUserRepository userRepository, ISteamWebInterfaceFactory steamInterface) : base(
-            userRepository, steamInterface)
-        {
-        }
+            userRepository, steamInterface) { }
 
         [Command(nameof(RustStats))]
         [Description("Check your Rust stats")]
         public async Task RustStats(CommandContext ctx, DiscordMember member = null)
         {
-            var guildId = ctx.Guild.Id;
-            //Check if the member is null, if it is set the member to the one who queried.
-            if (member == null) member = ctx.Member;
-            var loadingMessage = await ctx.Channel.SendMessageAsync($"Getting {member.DisplayName}'s stats...");
-            //Get the user from the database
-            var (status, user) = await _userRepository.Get(member.Id, guildId);
-            //If we can find the user in the database, return
-            if (status != Status.Found)
+            var (discordMessage, discordEmbed, statModel, game) = await getGameEmbed(ctx, rustGameId, rustGameName, member);
+
+            if (discordEmbed == null || statModel == null || game == null)
             {
-                await loadingMessage.ModifyAsync($"Could not find user {member.DisplayName} in the database");
                 return;
             }
+            
+            var rustStats = new RustStats(statModel); 
 
-            var steamId = user.SteamId;
-            if (steamId == 0u)
-            {
-                await loadingMessage.ModifyAsync($"{member.DisplayName} does not have a SteamId set");
-                return;
-            }
+            discordEmbed.AddField("KD", $"{Math.Round(rustStats.KD, 2)}", true);
+            discordEmbed.AddField("Kills", $"{rustStats.Kills}", true);
+            discordEmbed.AddField("Deaths", $"{rustStats.Deaths}", true);
 
-            try
-            {
-                var steamOwnedGames = await _steamPlayerService.GetOwnedGamesAsync(steamId);
-                var rustGame = steamOwnedGames.Data.OwnedGames.FirstOrDefault(g => g.AppId == rustGameId);
+            discordEmbed.AddField("Headshots", $"{rustStats.HeadShots}", true);
+            discordEmbed.AddField("Bullet hits on players", $"{rustStats.BulletsHitPlayer}", true);
+            discordEmbed.AddField("Arrow hits on players", $"{rustStats.ArrowsHitPlayer}", true);
 
-                if (rustGame == null)
-                {
-                    await loadingMessage.ModifyAsync($"{member.DisplayName} does not own Rust");
-                    return;
-                }
+            discordEmbed.AddField("Total hours", $"{Math.Round(game.PlaytimeForever.TotalHours)}");
 
-                var steamProfile = await _steamUser.GetPlayerSummaryAsync(steamId);
-
-                var gameStats =
-                    await _steamUserStats.GetUserStatsForGameAsync(steamId, rustGameId);
-
-                var rustStats = new RustStats(gameStats.Data.Stats);
-                var discordEmbed = new DiscordEmbedBuilder
-                {
-                    Author = new DiscordEmbedBuilder.EmbedAuthor
-                    {
-                        Name = steamProfile.Data.Nickname,
-                        IconUrl = steamProfile.Data.AvatarUrl,
-                        Url = steamProfile.Data.ProfileUrl
-                    },
-                    Title = $"{steamProfile.Data.Nickname}'s Rust stats",
-                    Url = steamProfile.Data.ProfileUrl,
-                    Thumbnail = new DiscordEmbedBuilder.EmbedThumbnail
-                    {
-                        Url = steamProfile.Data.AvatarFullUrl
-                    }
-                };
-
-                discordEmbed.AddField("KD", $"{Math.Round(rustStats.KD, 2)}", true);
-                discordEmbed.AddField("Kills", $"{rustStats.Kills}", true);
-                discordEmbed.AddField("Deaths", $"{rustStats.Deaths}", true);
-
-                discordEmbed.AddField("Headshots", $"{rustStats.HeadShots}", true);
-                discordEmbed.AddField("Bullet hits on players", $"{rustStats.BulletsHitPlayer}", true);
-                discordEmbed.AddField("Arrow hits on players", $"{rustStats.ArrowsHitPlayer}", true);
-
-                discordEmbed.AddField("Total hours", $"{Math.Round(rustGame.PlaytimeForever.TotalHours)}");
-
-                await loadingMessage.ModifyAsync(MacintoshEmbed.Create(discordEmbed));
-            }
-            catch (HttpRequestException)
-            {
-                await loadingMessage.ModifyAsync(GetPrivateSteamProfileEmbed());
-            }
+            await discordMessage.ModifyAsync(MacintoshEmbed.Create(discordEmbed));
         }
     }
 }
