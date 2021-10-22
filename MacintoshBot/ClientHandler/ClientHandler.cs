@@ -12,6 +12,7 @@ using MacintoshBot.Models.Group;
 using MacintoshBot.Models.Message;
 using MacintoshBot.Models.Role;
 using MacintoshBot.Models.User;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 namespace MacintoshBot.ClientHandler
@@ -24,10 +25,12 @@ namespace MacintoshBot.ClientHandler
         private readonly ILevelRoleRepository _levelRoleRepository;
         private readonly IMessageRepository _messageRepository;
         private readonly IUserRepository _userRepository;
+        private readonly ILogger<ClientHandler> _logger;
 
         public ClientHandler(IUserRepository userRepository, IGroupRepository groupRepository,
             IMessageRepository messageRepository, ILevelRoleRepository levelRoleRepository,
-            IChannelRepository channelRepository, IFactRepository factRepository)
+            IChannelRepository channelRepository, IFactRepository factRepository,
+            ILogger<ClientHandler> logger)
         {
             _userRepository = userRepository;
             _groupRepository = groupRepository;
@@ -35,6 +38,7 @@ namespace MacintoshBot.ClientHandler
             _levelRoleRepository = levelRoleRepository;
             _channelRepository = channelRepository;
             _factRepository = factRepository;
+            _logger = logger;
         }
 
         public async Task SelfAssignRoles(DiscordClient client, ulong guildId)
@@ -42,7 +46,7 @@ namespace MacintoshBot.ClientHandler
             var server = client.Guilds.Values.FirstOrDefault(g => g.Id == guildId);
             if (server == null)
             {
-                await Console.Error.WriteLineAsync("Could not find the server");
+                _logger.LogError("Could not find the server");
                 return;
             }
 
@@ -50,7 +54,7 @@ namespace MacintoshBot.ClientHandler
             var roleChannel = await _channelRepository.Get("role", guildId);
             if (roleChannel.status != Status.Found)
             {
-                await Console.Error.WriteLineAsync("Could not find the roles channel in the database");
+                _logger.LogError("Could not find the roles channel in the database");
                 return;
             }
 
@@ -58,7 +62,7 @@ namespace MacintoshBot.ClientHandler
                 server.Channels.Values.FirstOrDefault(channel => channel.Id == roleChannel.channel.ChannelId);
             if (roleDiscordChannel == null)
             {
-                await Console.Error.WriteLineAsync("Could not find the roles channel");
+                _logger.LogError("Could not find the roles channel");
                 return;
             }
 
@@ -66,14 +70,14 @@ namespace MacintoshBot.ClientHandler
             var message = await _messageRepository.GetMessageId("role", guildId);
             if (message.status != Status.Found)
             {
-                await Console.Error.WriteLineAsync("Could not find the roles message in the database");
+                _logger.LogError("Could not find the roles message in the database");
                 return;
             }
 
             var assignMessage = await roleDiscordChannel.GetMessageAsync(message.messageId);
             if (assignMessage == null)
             {
-                await Console.Error.WriteLineAsync("Could not find the roles message");
+                _logger.LogError("Could not find the roles message");
                 return;
             }
 
@@ -87,7 +91,7 @@ namespace MacintoshBot.ClientHandler
             var server = client.Guilds.Values.FirstOrDefault(g => g.Id == guildId);
             if (server == null)
             {
-                await Console.Error.WriteLineAsync("Could not find the server");
+                _logger.LogError("Could not find the server");
                 return null;
             }
 
@@ -95,7 +99,7 @@ namespace MacintoshBot.ClientHandler
             var roleChannel = await _channelRepository.Get("role", guildId);
             if (roleChannel.status != Status.Found)
             {
-                await Console.Error.WriteLineAsync("Could not find the roles channel in the database");
+                _logger.LogError("Could not find the roles channel in the database");
                 return null;
             }
 
@@ -103,7 +107,7 @@ namespace MacintoshBot.ClientHandler
                 server.Channels.Values.FirstOrDefault(channel => channel.Id == roleChannel.channel.ChannelId);
             if (roleDiscordChannel == null)
             {
-                await Console.Error.WriteLineAsync("Could not find the roles channel");
+                _logger.LogError("Could not find the roles channel");
                 return null;
             }
 
@@ -112,7 +116,8 @@ namespace MacintoshBot.ClientHandler
 
             return await roleDiscordChannel.SendMessageAsync(messageBuilder);
         }
-
+    
+        //TODO Continue logging from here
         public async Task<DiscordRole> DiscordRoleFromId(DiscordClient client, ulong roleId, ulong guildId)
         {
             var server = client.Guilds.Values.FirstOrDefault(g => g.Id == guildId);
@@ -256,12 +261,20 @@ namespace MacintoshBot.ClientHandler
 
         private async Task SendDailyFact(DiscordClient client, DiscordChannel channel)
         {
-            var jsonFact = new WebClient().DownloadString("https://uselessfacts.jsph.pl/today.json?language=en");
-            var factText = JsonConvert.DeserializeObject<DailyFactJson>(jsonFact);
-            if (factText == null) return;
-            var fact = await _factRepository.Create(factText.Text);
-            if (fact.status != Status.Created) return;
-            await CreateFactMessage(client, fact.fact, channel);
+            try
+            {
+                var jsonFact = new WebClient().DownloadString("https://uselessfacts.jsph.pl/today.json?language=en");
+                var factText = JsonConvert.DeserializeObject<DailyFactJson>(jsonFact);
+                if (factText == null) return;
+                var (status, fact) = await _factRepository.Create(factText.Text);
+                if (status != Status.Created) return;
+                await CreateFactMessage(client, fact, channel);
+                _logger.LogInformation($"Successfully sent the daily fact #{fact.Id}");
+            }
+            catch (Exception e)
+            {
+                _logger.LogError("Error occured when sending daily fact {e}", e);
+            }
         }
     }
 }

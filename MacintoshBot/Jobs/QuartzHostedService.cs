@@ -1,6 +1,7 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Quartz;
 using Quartz.Spi;
 
@@ -13,15 +14,17 @@ namespace MacintoshBot.Jobs
         private readonly IJobFactory _jobFactory;
         private readonly RoleUpdateJob _roleUpdateJob;
         private readonly ISchedulerFactory _schedulerFactory;
+        private readonly ILogger<QuartzHostedService> _logger;
 
         public QuartzHostedService(
             ISchedulerFactory schedulerFactory, IJobFactory jobFactory, RoleUpdateJob roleUpdateJob,
-            DailyFactJob dailyFactJob)
+            DailyFactJob dailyFactJob, ILogger<QuartzHostedService> logger)
         {
             _schedulerFactory = schedulerFactory;
             _jobFactory = jobFactory;
             _roleUpdateJob = roleUpdateJob;
             _dailyFactJob = dailyFactJob;
+            _logger = logger;
         }
 
         public IScheduler Scheduler { get; set; }
@@ -62,6 +65,8 @@ namespace MacintoshBot.Jobs
                 .Build();
             await Scheduler.ScheduleJob(dailyFactJob, dailyFactTrigger, cancellationToken);
 
+            
+            _logger.LogInformation("Scheduled the registered jobs");
             await Scheduler.Start(cancellationToken);
         }
 

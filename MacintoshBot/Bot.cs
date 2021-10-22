@@ -17,6 +17,7 @@ using MacintoshBot.Models.User;
 using MacintoshBot.XpHandlers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace MacintoshBot
 {
@@ -30,11 +31,13 @@ namespace MacintoshBot
         private readonly IServiceProvider _services;
         private readonly IUserRepository _userRepository;
         private readonly IXpGrantModel _xpGrantModel;
+        private readonly ILogger<Bot> _logger;
 
         public Bot(IServiceProvider services, DiscordClient client, IUserRepository userRepository,
             IGroupRepository groupRepository,
             IMessageRepository messageRepository, ILevelRoleRepository levelRoleRepository,
-            IChannelRepository channelRepository, IXpGrantModel xpGrantModel, IClientHandler clientHandler)
+            IChannelRepository channelRepository, IXpGrantModel xpGrantModel, IClientHandler clientHandler,
+            ILogger<Bot> logger)
         {
             _services = services;
             _client = client;
@@ -45,6 +48,7 @@ namespace MacintoshBot
             _channelRepository = channelRepository;
             _xpGrantModel = xpGrantModel;
             _clientHandler = clientHandler;
+            _logger = logger;
 
             //Get the prefix object
             var config = _services.GetService<ClientConfig>();
@@ -91,6 +95,7 @@ namespace MacintoshBot
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
+            _logger.LogInformation("Bot started...");
             await _client.ConnectAsync(
                 new DiscordActivity("?help", ActivityType.ListeningTo),
                 UserStatus.Online).ConfigureAwait(false);
@@ -98,6 +103,7 @@ namespace MacintoshBot
 
         public async Task StopAsync(CancellationToken cancellationToken)
         {
+            _logger.LogInformation("Bot stopped...");
             await _client.DisconnectAsync().ConfigureAwait(false);
         }
 

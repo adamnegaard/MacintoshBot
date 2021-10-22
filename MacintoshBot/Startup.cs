@@ -1,4 +1,5 @@
-﻿using DSharpPlus;
+﻿using System.IO;
+using DSharpPlus;
 using MacintoshBot.ClientHandler;
 using MacintoshBot.Entities;
 using MacintoshBot.Jobs;
@@ -15,6 +16,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Quartz;
 using Quartz.Impl;
 using Quartz.Spi;
@@ -58,12 +61,12 @@ namespace MacintoshBot
 
             //Steam API related
             var steamInterface = new SteamWebInterfaceFactory(Configuration["Steam:ApiKey"]);
-            services.AddSingleton<ISteamWebInterfaceFactory>(steamInterface );
-            
+            services.AddSingleton<ISteamWebInterfaceFactory>(steamInterface);
+
             //League of Legends API related
             var riotInterface = RiotApi.GetDevelopmentInstance(Configuration["Riot:ApiKey"]);
             services.AddSingleton<IRiotApi>(riotInterface);
-            
+
             //The discord bot
             services.AddDiscordService();
 
@@ -79,7 +82,6 @@ namespace MacintoshBot
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
-        {
-        }
+        {}
     }
 }

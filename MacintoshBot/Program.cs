@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -30,11 +31,11 @@ namespace MacintoshBot
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>()
-                        .ConfigureLogging(logging =>
+                        .ConfigureLogging((ctx, logging) =>
                         {
-                            //Comment for logging development logging
-                            //logging.ClearProviders();
-                            logging.SetMinimumLevel(LogLevel.Information);
+                            var directory = Directory.GetCurrentDirectory();
+                            logging.AddFile(Path.Combine(directory, "Logs/MacintoshBot-{Date}.log"));
+                            logging.AddConfiguration(ctx.Configuration.GetSection("Logging"));
                         })
                         .UseWebRoot("Public")
                         //For some odd reason, this line is required for dependency injection in this case? See https://github.com/aspnet/DependencyInjection/issues/578

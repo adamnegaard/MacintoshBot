@@ -41,4 +41,5 @@ namespace MacintoshBot
             return services.AddHostedService<Bot>();
         }
     }
+    
 }
