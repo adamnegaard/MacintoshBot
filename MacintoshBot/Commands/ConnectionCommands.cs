@@ -27,8 +27,8 @@ namespace MacintoshBot.Commands
         }
 
         [Command(nameof(Link))]
-        [Description("Link an account from a profile url")]
-        public async Task Link(CommandContext ctx, Uri profilePage)
+        [Description("Link an account from a string (either url or name)")]
+        public async Task Link(CommandContext ctx, string profileDetails)
         {
             var guildId = ctx.Guild.Id;
             var memberId = ctx.Member.Id;
@@ -38,22 +38,41 @@ namespace MacintoshBot.Commands
                 GuildId = guildId,
                 UserId = memberId
             };
-            DiscordEmbedBuilder embed = null;
-            if (profilePage.AbsoluteUri.ToLower().Contains("steam"))
-                embed = await LinkSteam(userUpdate, profilePage.AbsoluteUri);
-
+            DiscordEmbedBuilder embed;
+            
+            if (Uri.IsWellFormedUriString(profileDetails, UriKind.Absolute) && profileDetails.ToLower().Contains("steam"))
+            {
+                embed = await LinkSteam(userUpdate, profileDetails);
+            }
+            // Assume it's a summoner name if it's not a url
+            else
+            {
+                embed = await LinkSummonerName(userUpdate,profileDetails);
+            }
+            
             if (embed == null)
-                await ctx.Channel.SendMessageAsync($"Did not recognize the platform in the link: {profilePage}");
+                await ctx.Channel.SendMessageAsync($"Did not recognize the platform in the profile details: {profileDetails}");
 
             await ctx.Channel.SendMessageAsync(MacintoshEmbed.Create(embed));
+        }
+
+        public async Task<DiscordEmbedBuilder> LinkSummonerName(UserUpdateDTO userUpdate, string profilePage)
+        {
+            userUpdate.SummonerName = profilePage;
+            var (status, user) = await _userRepository.Update(userUpdate);
+            if (status == Status.Updated)
+                return GetSummonerNameSuccess(profilePage);
+            
+            return GetSummonerNameError();
+
         }
 
         public async Task<DiscordEmbedBuilder> LinkSteam(UserUpdateDTO userUpdate, string profilePage)
         {
             try
             {
-                var vainityPattern = @"steamcommunity.com\/id\/(.*)\/";
-                var reg = new Regex(vainityPattern, RegexOptions.IgnoreCase);
+                var vanityPattern = @"steamcommunity.com\/id\/(.*)\/";
+                var reg = new Regex(vanityPattern, RegexOptions.IgnoreCase);
                 var vanityMatch = reg.Match(profilePage);
                 if (vanityMatch.Success)
                 {
@@ -79,6 +98,25 @@ namespace MacintoshBot.Commands
             {
                 Title = "Success",
                 Description = $"Successfully linked your Steam ID: {steamId} to your profile"
+            };
+        }
+        
+        public static DiscordEmbedBuilder GetSummonerNameSuccess(string summonerName)
+        {
+            return new()
+            {
+                Title = "Success",
+                Description = $"Successfully set your Summoner Name to: {summonerName}"
+            };
+        }
+        
+        public static DiscordEmbedBuilder GetSummonerNameError()
+        {
+            return new()
+            {
+                Title = "Error",
+                Description =
+                    "Error when linking your Summoner Name"
             };
         }
 

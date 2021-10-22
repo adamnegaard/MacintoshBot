@@ -1,22 +1,19 @@
 using System;
-using System.Linq;
-using System.Net.Http;
 using System.Threading.Tasks;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
-using MacintoshBot.Models;
 using MacintoshBot.Models.User;
 using MacintoshBot.SteamStats;
 using SteamWebAPI2.Utilities;
 
-namespace MacintoshBot.Commands
+namespace MacintoshBot.Commands.Steam
 {
     [System.ComponentModel.Description("Commands related to Rust")]
     public class RustCommands : SteamCommandBase
     {
-        private readonly uint rustGameId = 252490;
-        private readonly string rustGameName = "Rust";
+        private const uint RustGameId = 252490;
+        private const string RustGameName = "Rust";
 
         public RustCommands(IUserRepository userRepository, ISteamWebInterfaceFactory steamInterface) : base(
             userRepository, steamInterface) { }
@@ -25,7 +22,7 @@ namespace MacintoshBot.Commands
         [Description("Check your Rust stats")]
         public async Task RustStats(CommandContext ctx, DiscordMember member = null)
         {
-            var (discordMessage, discordEmbed, statModel, game) = await getGameEmbed(ctx, rustGameId, rustGameName, member);
+            var (discordMessage, discordEmbed, statModel, game) = await GetSteamGameEmbed(ctx, RustGameId, RustGameName, member);
 
             if (discordEmbed == null || statModel == null || game == null)
             {

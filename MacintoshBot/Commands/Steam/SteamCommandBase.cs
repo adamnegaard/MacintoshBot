@@ -6,19 +6,18 @@ using DSharpPlus.CommandsNext;
 using DSharpPlus.Entities;
 using MacintoshBot.Models;
 using MacintoshBot.Models.User;
-using MacintoshBot.SteamStats;
 using Steam.Models.SteamCommunity;
 using Steam.Models.SteamPlayer;
 using SteamWebAPI2.Interfaces;
 using SteamWebAPI2.Utilities;
 
-namespace MacintoshBot.Commands
+namespace MacintoshBot.Commands.Steam
 {
     public class SteamCommandBase : GameCommandBase
     {
-        protected readonly IPlayerService _steamPlayerService;
-        protected readonly ISteamUser _steamUser;
-        protected readonly ISteamUserStats _steamUserStats;
+        private readonly IPlayerService _steamPlayerService;
+        private readonly ISteamUser _steamUser;
+        private readonly ISteamUserStats _steamUserStats;
 
         public SteamCommandBase(IUserRepository userRepository, ISteamWebInterfaceFactory steamInterface) : base(
             userRepository)
@@ -28,26 +27,21 @@ namespace MacintoshBot.Commands
             _steamPlayerService = steamInterface.CreateSteamWebInterface<PlayerService>(new HttpClient());
         }
 
-        protected async Task<(DiscordMessage message, DiscordEmbedBuilder embedBuilder, IEnumerable<UserStatModel> stats, OwnedGameModel game)> getGameEmbed(CommandContext ctx, uint gameId, string gameName,
-            DiscordMember member = null)
+        protected async
+            Task<(DiscordMessage message, DiscordEmbedBuilder embedBuilder, IEnumerable<UserStatModel> stats,
+                OwnedGameModel game)> GetSteamGameEmbed(CommandContext ctx, uint gameId, string gameName,
+                DiscordMember member = null)
         {
-            var guildId = ctx.Guild.Id;
-            //Check if the member is null, if it is set the member to the one who queried.
-            if (member == null) member = ctx.Member;
-            var loadingMessage = await ctx.Channel.SendMessageAsync($"Getting {member.DisplayName}'s stats...");
-            //Get the user from the database
-            var (status, user) = await _userRepository.Get(member.Id, guildId);
-            //If we can find the user in the database, return
-            if (status != Status.Found)
+            var (user, loadingMessage, taggedMember) = await GetStatsMessageAndUser(ctx, member);
+            if(user == null)
             {
-                await loadingMessage.ModifyAsync($"Could not find user {member.DisplayName} in the database");
                 return (loadingMessage, null, null, null);
             }
 
             var steamId = user.SteamId;
             if (steamId == 0u)
             {
-                await loadingMessage.ModifyAsync($"{member.DisplayName} does not have a SteamId set");
+                await loadingMessage.ModifyAsync($"{taggedMember.DisplayName} does not have a SteamId set");
                 return (loadingMessage, null, null, null);
             }
 
@@ -58,7 +52,7 @@ namespace MacintoshBot.Commands
 
                 if (game == null)
                 {
-                    await loadingMessage.ModifyAsync($"{member.DisplayName} does not own {gameName}");
+                    await loadingMessage.ModifyAsync($"{taggedMember.DisplayName} does not own {gameName}");
                     return (loadingMessage, null, null, null);
                 }
 

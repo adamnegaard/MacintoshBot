@@ -7,13 +7,13 @@ using MacintoshBot.Models.User;
 using MacintoshBot.SteamStats;
 using SteamWebAPI2.Utilities;
 
-namespace MacintoshBot.Commands
+namespace MacintoshBot.Commands.Steam
 {
     [System.ComponentModel.Description("Commands related to Counter Strike")]
     public class CsCommands : SteamCommandBase
     {
-        private readonly uint csGameId = 730;
-        private readonly string csGameName = "CSGO";
+        private const uint CsGameId = 730;
+        private const string CsGameName = "CSGO";
 
         public CsCommands(IUserRepository userRepository, ISteamWebInterfaceFactory steamInterface) : base(
             userRepository, steamInterface) { }
@@ -22,7 +22,7 @@ namespace MacintoshBot.Commands
         [Description("Check your Counter Strike stats")]
         public async Task CsStats(CommandContext ctx, DiscordMember member = null)
         {
-            var (discordMessage, discordEmbed, statModel, game) = await getGameEmbed(ctx, csGameId, csGameName, member);
+            var (discordMessage, discordEmbed, statModel, game) = await GetSteamGameEmbed(ctx, CsGameId, CsGameName, member);
 
             if (discordEmbed == null || statModel == null || game == null)
             {

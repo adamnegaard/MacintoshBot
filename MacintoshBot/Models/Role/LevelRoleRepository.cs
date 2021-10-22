@@ -42,6 +42,25 @@ namespace MacintoshBot.Models.Role
             });
         }
 
+        public async Task<(Status status, RoleDTO role)> Update(RoleUpdateDTO roleUpdate, ulong oldRoleId, ulong guildId)
+        {
+            var role = await _context.LevelRoles.FirstOrDefaultAsync(r =>
+                r.RoleId == oldRoleId && r.GuildId == guildId);
+            if (role == null) return (Status.BadRequest, null);
+            
+            role.Rank = roleUpdate.Rank;
+            role.RoleId = roleUpdate.RoleId; 
+            
+            await _context.SaveChangesAsync();
+            return (Status.Updated, new RoleDTO
+            {
+                RefName = role.RefName,
+                GuildId = role.GuildId,
+                Rank = role.Rank,
+                RoleId = role.RoleId
+            });
+        }
+
         public async Task<(Status status, RoleDTO role)> Get(string refName, ulong guildId)
         {
             var role = await _context.LevelRoles.FirstOrDefaultAsync(r =>

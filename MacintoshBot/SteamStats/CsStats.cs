@@ -22,10 +22,10 @@ namespace MacintoshBot.SteamStats
         public double DamageDone { get; private set; }
         
         [JsonProperty(PropertyName = "total_shots_fired")]
-        private double ShotsFired { get; set; }
+        public double ShotsFired { get; set; }
         
         [JsonProperty(PropertyName = "total_shots_hit")]
-        private double ShotsHit { get; set; }
+        public double ShotsHit { get; set; }
         
         public double Accuracy
         {

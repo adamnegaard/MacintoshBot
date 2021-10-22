@@ -8,6 +8,7 @@ namespace MacintoshBot.Models.Role
     public interface ILevelRoleRepository
     {
         Task<(Status status, RoleDTO role)> Create(RoleDTO role);
+        Task<(Status status, RoleDTO role)> Update(RoleUpdateDTO roleUpdate, ulong oldRoleId, ulong guildId);
         Task<(Status status, RoleDTO role)> Get(string refName, ulong guildId);
         Task<(Status status, RoleDTO role)> Get(ulong roleId, ulong guildId);
         Task<(Status status, RoleDTO role)> GetHighestRank(ulong guildId);

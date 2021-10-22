@@ -17,6 +17,10 @@ Set your Steam Api Key (generate one [here](https://steamcommunity.com/dev/apike
 ```
 dotnet user-secrets set "Steam:ApiKey" "<ApiKey>"
 ```
+Set your Riot Api Key (generate one [here](https://developer.riotgames.com/)).
+```
+dotnet user-secrets set "Riot:ApiKey" "<ApiKey>"
+```
 
 ## Building the database
 Change to the root directory of the application `MacintoshBot` and enter the commands:

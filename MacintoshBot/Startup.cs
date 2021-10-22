@@ -18,6 +18,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Quartz;
 using Quartz.Impl;
 using Quartz.Spi;
+using RiotSharp;
+using RiotSharp.Interfaces;
 using SteamWebAPI2.Utilities;
 
 namespace MacintoshBot
@@ -55,8 +57,12 @@ namespace MacintoshBot
             services.AddScoped<IClientHandler, ClientHandler.ClientHandler>();
 
             //Steam API related
-            var webInterfaceFactory = new SteamWebInterfaceFactory(Configuration["Steam:ApiKey"]);
-            services.AddSingleton<ISteamWebInterfaceFactory>(webInterfaceFactory);
+            var steamInterface = new SteamWebInterfaceFactory(Configuration["Steam:ApiKey"]);
+            services.AddSingleton<ISteamWebInterfaceFactory>(steamInterface );
+            
+            //League of Legends API related
+            var riotInterface = RiotApi.GetDevelopmentInstance(Configuration["Riot:ApiKey"]);
+            services.AddSingleton<IRiotApi>(riotInterface);
             
             //The discord bot
             services.AddDiscordService();

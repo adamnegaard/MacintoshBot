@@ -7,6 +7,8 @@ using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
 using MacintoshBot.ClientHandler;
 using MacintoshBot.Commands;
+using MacintoshBot.Commands.Riot;
+using MacintoshBot.Commands.Steam;
 using MacintoshBot.Models.Channel;
 using MacintoshBot.Models.Group;
 using MacintoshBot.Models.Message;
@@ -66,12 +68,14 @@ namespace MacintoshBot
             _client.GuildMemberRemoved += OnMemberRemoved;
             _client.GuildAvailable += OnGuildAvailable;
             _client.VoiceStateUpdated += OnVoiceStateUpdate;
+            _client.GuildRoleUpdated += OnGuildRoleUpdated;
 
             //Commands adding
             _commands = _client.UseCommandsNext(commandsConfig);
             _commands.RegisterCommands<ConnectionCommands>();
             _commands.RegisterCommands<RustCommands>();
             _commands.RegisterCommands<CsCommands>();
+            _commands.RegisterCommands<LeagueCommands>();
             _commands.RegisterCommands<ManageCommands>();
             _commands.RegisterCommands<LevelCommands>();
             _commands.RegisterCommands<RandomCommands>();

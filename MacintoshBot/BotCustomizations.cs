@@ -6,6 +6,7 @@ using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
 using MacintoshBot.Models;
 using MacintoshBot.Models.Message;
+using MacintoshBot.Models.Role;
 
 namespace MacintoshBot
 {
@@ -140,6 +141,28 @@ namespace MacintoshBot
             else if (eventArgs.Before != null && (eventArgs.After == null || eventArgs.After.Channel == null))
             {
                 var gainedXp = await _xpGrantModel.ExitVoiceChannel(eventArgs.User.Id, guildId);
+            }
+        }
+        
+        public async Task OnGuildRoleUpdated(DiscordClient client, GuildRoleUpdateEventArgs eventArgs)
+        {
+            var guildId = eventArgs.Guild.Id;
+            if (eventArgs.RoleBefore != null)
+            {
+                var (status, role) = await _levelRoleRepository.Get(eventArgs.RoleBefore.Id, guildId);
+                if (status == Status.Found)
+                {
+                    if (eventArgs.RoleAfter != null)
+                    {
+                        // TODO: Be able to modify the name
+                        var roleUpdate = new RoleUpdateDTO
+                        {
+                            Rank = role.Rank,
+                            RoleId = eventArgs.RoleAfter.Id
+                        };
+                        await _levelRoleRepository.Update(roleUpdate, eventArgs.RoleBefore.Id, guildId);
+                    }
+                }
             }
         }
 

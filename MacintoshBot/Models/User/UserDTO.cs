@@ -8,5 +8,6 @@
 
         public int Level => Xp / 100;
         public ulong SteamId { get; set; }
+        public string SummonerName { get; set; }
     }
 }

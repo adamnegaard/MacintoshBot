@@ -56,7 +56,8 @@ namespace MacintoshBot.Models.User
                 UserId = u.UserId,
                 GuildId = u.GuildId,
                 Xp = u.Xp,
-                SteamId = u.SteamId
+                SteamId = u.SteamId,
+                SummonerName = u.SummonerName
             }).ToListAsync();
         }
 
@@ -67,7 +68,8 @@ namespace MacintoshBot.Models.User
                 UserId = u.UserId,
                 GuildId = u.GuildId,
                 Xp = u.Xp,
-                SteamId = u.SteamId
+                SteamId = u.SteamId,
+                SummonerName = u.SummonerName
             }).ToListAsync();
         }
 
@@ -78,6 +80,7 @@ namespace MacintoshBot.Models.User
             if (user == null) return (Status.BadRequest, null);
 
             if (userUpdate.SteamId != 0) user.SteamId = userUpdate.SteamId;
+            if (userUpdate.SummonerName != null) user.SummonerName = userUpdate.SummonerName;
 
             await _context.SaveChangesAsync();
             return (Status.Updated, new UserDTO
@@ -85,7 +88,8 @@ namespace MacintoshBot.Models.User
                 UserId = user.UserId,
                 GuildId = user.GuildId,
                 Xp = user.Xp,
-                SteamId = user.SteamId
+                SteamId = user.SteamId,
+                SummonerName = user.SummonerName
             });
         }
 
@@ -107,7 +111,8 @@ namespace MacintoshBot.Models.User
                 UserId = user.UserId,
                 GuildId = user.GuildId,
                 Xp = user.Xp,
-                SteamId = user.SteamId
+                SteamId = user.SteamId,
+                SummonerName = user.SummonerName
             });
         }
     }
