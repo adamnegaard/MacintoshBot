@@ -105,11 +105,6 @@ namespace MacintoshBot
             await newMemberDiscordChannel.SendMessageAsync(message);
         }
 
-        // private async Task CreateApplicationCommands(DiscordClient client)
-        // {
-        //     
-        // }
-
         private async Task OnGuildAvailable(DiscordClient client, GuildCreateEventArgs eventArgs)
         {
             var guildId = eventArgs.Guild.Id;
@@ -144,6 +139,7 @@ namespace MacintoshBot
             }
         }
         
+        // When a role is updated
         public async Task OnGuildRoleUpdated(DiscordClient client, GuildRoleUpdateEventArgs eventArgs)
         {
             var guildId = eventArgs.Guild.Id;
