@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using NLog.Extensions.Logging;
+using NLog.Web;
 
 namespace MacintoshBot
 {
@@ -17,13 +19,15 @@ namespace MacintoshBot
 
         private static IHostBuilder CreateHostBuilder(string[] args)
         {
+
             return Host.CreateDefaultBuilder(args)
                 .ConfigureAppConfiguration((hostContext, builder) =>
                 {
                     //Get the enviroment
                     var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
                     //Add the optional appsettings.json
-                    builder.AddJsonFile($"appsettings.{env}.json", true);
+                    builder.AddJsonFile($"appsettings.Production.json", true);
+                    //builder.AddJsonFile($"appsettings.{env}.json", true);
 
                     //Add the user secrets for development environments
                     if (hostContext.HostingEnvironment.IsDevelopment()) builder.AddUserSecrets<Program>();
@@ -33,11 +37,10 @@ namespace MacintoshBot
                     webBuilder.UseStartup<Startup>()
                         .ConfigureLogging((ctx, logging) =>
                         {
-                            var directory = Directory.GetCurrentDirectory();
-                            logging.AddFile(Path.Combine(directory, "Logs/MacintoshBot-{Date}.log"));
-                            logging.AddConfiguration(ctx.Configuration.GetSection("Logging"));
+                            // Enable NLog as one of the Logging Provider
+                            logging.AddNLog();
                         })
-                        .UseWebRoot("Public")
+                        .UseNLog()
                         //For some odd reason, this line is required for dependency injection in this case? See https://github.com/aspnet/DependencyInjection/issues/578
                         .UseDefaultServiceProvider(options =>
                             options.ValidateScopes = false);

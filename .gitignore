@@ -131,4 +131,7 @@ $RECYCLE.BIN/
 # Mac desktop service store files
 .DS_Store
 
+# NLog config
+nlog.config
+
 _NCrunch*
