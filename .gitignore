@@ -132,6 +132,6 @@ $RECYCLE.BIN/
 .DS_Store
 
 # NLog config
-*/nlog.config
+nlog.config
 
 _NCrunch*
