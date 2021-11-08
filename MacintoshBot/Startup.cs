@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Net.Http;
 using DSharpPlus;
 using MacintoshBot.ClientHandler;
 using MacintoshBot.Entities;
@@ -38,7 +39,9 @@ namespace MacintoshBot
 
         public void ConfigureServices(IServiceCollection services)
         {
+            // http clients
             services.AddHttpContextAccessor();
+            services.AddSingleton<HttpClient>(new HttpClient());
 
             services.AddDbContext<IDiscordContext, DiscordContext>(options =>
             {

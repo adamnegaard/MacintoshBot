@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.Entities;
@@ -25,11 +26,12 @@ namespace MacintoshBot.ClientHandler
         private readonly ILevelRoleRepository _levelRoleRepository;
         private readonly IMessageRepository _messageRepository;
         private readonly IUserRepository _userRepository;
+        private readonly HttpClient _httpClient;
         private readonly ILogger<ClientHandler> _logger;
 
         public ClientHandler(IUserRepository userRepository, IGroupRepository groupRepository,
             IMessageRepository messageRepository, ILevelRoleRepository levelRoleRepository,
-            IChannelRepository channelRepository, IFactRepository factRepository,
+            IChannelRepository channelRepository, IFactRepository factRepository, HttpClient httpClient,
             ILogger<ClientHandler> logger)
         {
             _userRepository = userRepository;
@@ -38,6 +40,7 @@ namespace MacintoshBot.ClientHandler
             _levelRoleRepository = levelRoleRepository;
             _channelRepository = channelRepository;
             _factRepository = factRepository;
+            _httpClient = httpClient;
             _logger = logger;
         }
 
@@ -263,17 +266,17 @@ namespace MacintoshBot.ClientHandler
         {
             try
             {
-                var jsonFact = new WebClient().DownloadString("https://uselessfacts.jsph.pl/today.json?language=en");
-                var factText = JsonConvert.DeserializeObject<DailyFactJson>(jsonFact);
-                if (factText == null) return;
-                var (status, fact) = await _factRepository.Create(factText.Text);
+                var jsonFactResponse = await _httpClient.GetStringAsync("https://uselessfacts.jsph.pl/today.json?language=en");
+                var factRead = JsonConvert.DeserializeObject<DailyFactJson>(jsonFactResponse);
+                if (factRead == null) return;
+                var (status, fact) = await _factRepository.Create(factRead.Text);
                 if (status != Status.Created) return;
                 await CreateFactMessage(client, fact, channel);
                 _logger.LogInformation($"Successfully sent the daily fact #{fact.Id}");
             }
             catch (Exception e)
             {
-                _logger.LogError("Error occured when sending daily fact {e}", e);
+                _logger.LogError("Error occured when sending daily fact", e);
             }
         }
     }
