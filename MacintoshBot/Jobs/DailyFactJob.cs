@@ -30,8 +30,8 @@ namespace MacintoshBot.Jobs
                 {
                     return;
                 }
-                _logger.LogInformation("Got the services required for the job, attempting to send the daily fact...");
                 await clientHandler.DailyFact(client);
+                _logger.LogInformation("Succesfully sent daily facts");
             }
         }
     }

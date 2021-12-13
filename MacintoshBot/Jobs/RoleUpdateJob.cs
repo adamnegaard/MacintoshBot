@@ -30,8 +30,8 @@ namespace MacintoshBot.Jobs
                 {
                     return;
                 }
-                _logger.LogInformation("Got the services required for the job, attempting to update roles...");
                 await clientHandler.EvaluateUserLevelUpdrades(client);
+                _logger.LogInformation("Succesfully updated roles");
             }
         }
     }

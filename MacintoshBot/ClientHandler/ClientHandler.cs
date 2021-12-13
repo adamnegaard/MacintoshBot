@@ -126,14 +126,14 @@ namespace MacintoshBot.ClientHandler
             var server = client.Guilds.Values.FirstOrDefault(g => g.Id == guildId);
             if (server == null)
             {
-                await Console.Error.WriteLineAsync("Could not find the server");
+                _logger.LogError("Could not find the server");
                 return null;
             }
 
             var role = server.Roles.FirstOrDefault(k => k.Key == roleId).Value;
             if (role == null)
             {
-                await Console.Error.WriteLineAsync("Could not find the specified role");
+                _logger.LogError("Could not find the specified role");
                 return null;
             }
 
@@ -155,6 +155,7 @@ namespace MacintoshBot.ClientHandler
 
                     var levelRole = await _levelRoleRepository.GetLevelFromDiscordMember(discordMember, guildId);
                     if (levelRole.status != Status.Found) continue;
+                    
                     var nextMemberRole =
                         await _levelRoleRepository.GetLevelRoleFromTime(discordMember.JoinedAt, guildId);
                     if (nextMemberRole.status != Status.Found) continue;
@@ -173,6 +174,7 @@ namespace MacintoshBot.ClientHandler
                             if (role == null) return 0;
                             await RevokeOtherRoles(client, discordMember, nextMemberRole.role, guildId);
                             await discordMember.GrantRoleAsync(role);
+                            _logger.LogInformation( $"Succesfully upgraded user with Id: {member.UserId} from role: {nextMemberRole.role.RefName} to {role.Name}");
                             upgrades++;
                         }
                 }
@@ -268,15 +270,17 @@ namespace MacintoshBot.ClientHandler
             {
                 var jsonFactResponse = await _httpClient.GetStringAsync("https://uselessfacts.jsph.pl/today.json?language=en");
                 var factRead = JsonConvert.DeserializeObject<DailyFactJson>(jsonFactResponse);
+                
                 if (factRead == null) return;
                 var (status, fact) = await _factRepository.Create(factRead.Text);
+                
                 if (status != Status.Created) return;
                 await CreateFactMessage(client, fact, channel);
                 _logger.LogInformation($"Successfully sent the daily fact #{fact.Id}");
             }
             catch (Exception e)
             {
-                _logger.LogError("Error occured when sending daily fact", e);
+                _logger.LogError($"Error occured when sending daily fact, error: {e.Message}");
             }
         }
     }

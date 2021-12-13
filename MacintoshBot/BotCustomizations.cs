@@ -7,6 +7,7 @@ using DSharpPlus.EventArgs;
 using MacintoshBot.Models;
 using MacintoshBot.Models.Message;
 using MacintoshBot.Models.Role;
+using Microsoft.Extensions.Logging;
 
 namespace MacintoshBot
 {
@@ -15,6 +16,7 @@ namespace MacintoshBot
         //A reaction is added to the self assign role message.
         private async Task OnReactionAdded(DiscordClient sender, MessageReactionAddEventArgs eventArgs)
         {
+            _logger.LogInformation($"Recieved {nameof(OnReactionAdded)} event");
             var guildId = eventArgs.Guild.Id;
             //Get the needed variables
             var messageId = eventArgs.Message.Id;
@@ -27,14 +29,17 @@ namespace MacintoshBot
             var message = await _messageRepository.GetMessageId("role", guildId);
             if (message.status == Status.Found && messageId == message.messageId)
             {
+                _logger.LogInformation($"User with Id: {reactionUser.Id} reacted with emoji: {eventArgs.Emoji.GetDiscordName()}");
                 var discordRole = await _clientHandler.DiscordRoleFromId(_client, role.roleId, guildId);
-                await reactionUser.GrantRoleAsync(discordRole).ConfigureAwait(false);
+                await reactionUser.GrantRoleAsync(discordRole);
+                _logger.LogInformation($"User with Id: {reactionUser.Id} was assigned role with Id: {discordRole.Id}");
             }
         }
 
         //A reaction is removed from the self assign role message
         private async Task OnReactionRemoved(DiscordClient sender, MessageReactionRemoveEventArgs eventArgs)
         {
+            _logger.LogInformation($"Recieved {nameof(OnReactionRemoved)} event");
             var guildId = eventArgs.Guild.Id;
             //Get the needed variables
             var messageId = eventArgs.Message.Id;
@@ -47,20 +52,25 @@ namespace MacintoshBot
             var message = await _messageRepository.GetMessageId("role", guildId);
             if (message.status == Status.Found && messageId == message.messageId)
             {
+                _logger.LogInformation($"User with Id: {reactionUser.Id} removed reaction with emoji: {eventArgs.Emoji.GetDiscordName()}");
                 var discordRole = await _clientHandler.DiscordRoleFromId(_client, role.roleId, guildId);
-                await reactionUser.RevokeRoleAsync(discordRole).ConfigureAwait(false);
+                await reactionUser.RevokeRoleAsync(discordRole);
+                _logger.LogInformation($"User with Id: {reactionUser.Id} was revoked role with Id: {discordRole.Id}");
             }
         }
 
-        //When a member joins the group assign them their role on discord and in the database
+        // When a member joins the group assign them their role on discord and in the database
         private async Task OnGuildMemberUpdated(DiscordClient client, GuildMemberUpdateEventArgs eventArgs)
         {
+            _logger.LogInformation($"Recieved {nameof(OnGuildMemberUpdated)} event");
             var pendingAfter = eventArgs.PendingAfter;
             var roles = eventArgs.Member.Roles;
+            // only assign the roles if user has passed screening and does not have any roles yet
             if (pendingAfter == false && !roles.Any())
             {
                 var guildId = eventArgs.Guild.Id;
                 var joinedMember = eventArgs.Member;
+                _logger.LogInformation($"User with Id: {joinedMember.Id} joined guild with Id: {guildId}");
                 await AssignNewUserRoles(joinedMember, guildId);
             }
         }
@@ -70,24 +80,37 @@ namespace MacintoshBot
         {
             //Create the user
             var createdUser = await _userRepository.Create(member.Id, guildId);
-            if (createdUser.status != Status.Created) return;
+            if (createdUser.status != Status.Created)
+            {
+                _logger.LogError($"Received {createdUser.status.ToString()} when creating user with Id: {member.Id} in database");
+                return;
+            }
 
             //Get the scrub role
             var lowestRank = await _levelRoleRepository.GetLowestRank(guildId);
-            if (lowestRank.status != Status.Found) return;
+            if (lowestRank.status != Status.Found)
+            {
+                _logger.LogError("Could not find the lowest role in the database");
+            }
 
             var discordRole = await _clientHandler.DiscordRoleFromId(_client, lowestRank.role.RoleId, guildId);
             await member.GrantRoleAsync(discordRole);
+            _logger.LogInformation($"Assigned {discordRole.Name} to user with Id: {member.Id}");
         }
 
         //When a member leaves
         private async Task OnMemberRemoved(DiscordClient client, GuildMemberRemoveEventArgs eventArgs)
         {
+            _logger.LogInformation($"Recieved {nameof(OnMemberRemoved)} event");
             var leftUser = eventArgs.Member;
             var guildId = eventArgs.Guild.Id;
 
             var status = await RemoveUser(leftUser, guildId);
-            if (status != Status.Deleted) return;
+            if (status != Status.Deleted)
+            {
+                _logger.LogInformation($"Could not delete user with Id: {leftUser.Id} from database");
+                return;
+            }
 
             await NotifyOfMemberLeave(leftUser, guildId);
         }
@@ -103,10 +126,13 @@ namespace MacintoshBot
                 server.Channels.Values.FirstOrDefault(c => c.Id == newMemberChannel.channel.ChannelId);
             if (newMemberDiscordChannel == null) return;
             await newMemberDiscordChannel.SendMessageAsync(message);
+            
+            _logger.LogInformation($"Sent member leave message: {message}");
         }
 
         private async Task OnGuildAvailable(DiscordClient client, GuildCreateEventArgs eventArgs)
         {
+            _logger.LogInformation($"Recieved {nameof(OnGuildAvailable)} event");
             var guildId = eventArgs.Guild.Id;
             var assignMessage = await _messageRepository.GetMessageId("role", guildId);
             if (assignMessage.status != Status.Found)
@@ -119,29 +145,39 @@ namespace MacintoshBot
                     RefName = "role"
                 };
                 var message = await _messageRepository.Create(roleMessage);
-                if (message.status != Status.Created) return;
+                if (message.status != Status.Created)
+                {
+                    _logger.LogError($"Could not create assign message in database, got status {message.status.ToString()}");
+                    return;
+                }
                 await _clientHandler.SelfAssignRoles(client, guildId);
+                _logger.LogInformation($"Succesfully sent self assign message in guild with Id: {guildId}");
             }
+            _logger.LogInformation($"Self assign message already existed, skipping...");
         }
 
         public async Task OnVoiceStateUpdate(DiscordClient client, VoiceStateUpdateEventArgs eventArgs)
         {
+            _logger.LogInformation($"Recieved {nameof(OnVoiceStateUpdate)} event");
             var guildId = eventArgs.Guild.Id;
             //User enters a voice channel
             if ((eventArgs.Before == null || eventArgs.Before.Channel == null) && eventArgs.After != null)
             {
+                _logger.LogInformation($"Member with Id: {eventArgs.User.Id} joined channel with id {eventArgs.After.Channel.Id}");
                 _xpGrantModel.EnterVoiceChannel(eventArgs.User.Id, guildId);
             }
             //User exits a voice channel
             else if (eventArgs.Before != null && (eventArgs.After == null || eventArgs.After.Channel == null))
             {
                 var gainedXp = await _xpGrantModel.ExitVoiceChannel(eventArgs.User.Id, guildId);
+                _logger.LogInformation($"Member with Id: {eventArgs.User.Id} left channel with id {eventArgs.Before.Channel.Id}\nGained {gainedXp} XP");
             }
         }
         
         // When a role is updated
         public async Task OnGuildRoleUpdated(DiscordClient client, GuildRoleUpdateEventArgs eventArgs)
         {
+            _logger.LogInformation($"Recieved {nameof(OnGuildRoleUpdated)} event");
             var guildId = eventArgs.Guild.Id;
             if (eventArgs.RoleBefore != null)
             {
@@ -157,6 +193,7 @@ namespace MacintoshBot
                             RoleId = eventArgs.RoleAfter.Id
                         };
                         await _levelRoleRepository.Update(roleUpdate, eventArgs.RoleBefore.Id, guildId);
+                        _logger.LogInformation($"Successfully updated role with old Id: {eventArgs.RoleBefore.Id}");
                     }
                 }
             }
