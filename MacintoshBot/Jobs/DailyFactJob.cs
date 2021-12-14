@@ -31,7 +31,7 @@ namespace MacintoshBot.Jobs
                     return;
                 }
                 await clientHandler.DailyFact(client);
-                _logger.LogInformation("Succesfully sent daily facts");
+                _logger.LogInformation($"Ran: {nameof(DailyFactJob)}");
             }
         }
     }

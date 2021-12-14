@@ -26,12 +26,13 @@ namespace MacintoshBot.ClientHandler
         private readonly ILevelRoleRepository _levelRoleRepository;
         private readonly IMessageRepository _messageRepository;
         private readonly IUserRepository _userRepository;
-        private readonly HttpClient _httpClient;
+        private readonly IHttpClientFactory _clientFactory;
+        
         private readonly ILogger<ClientHandler> _logger;
 
         public ClientHandler(IUserRepository userRepository, IGroupRepository groupRepository,
             IMessageRepository messageRepository, ILevelRoleRepository levelRoleRepository,
-            IChannelRepository channelRepository, IFactRepository factRepository, HttpClient httpClient,
+            IChannelRepository channelRepository, IFactRepository factRepository, IHttpClientFactory clientFactory,
             ILogger<ClientHandler> logger)
         {
             _userRepository = userRepository;
@@ -40,7 +41,7 @@ namespace MacintoshBot.ClientHandler
             _levelRoleRepository = levelRoleRepository;
             _channelRepository = channelRepository;
             _factRepository = factRepository;
-            _httpClient = httpClient;
+            _clientFactory = clientFactory;
             _logger = logger;
         }
 
@@ -152,7 +153,9 @@ namespace MacintoshBot.ClientHandler
                     var guild = client.Guilds.FirstOrDefault(g => g.Key == member.GuildId).Value;
                     var guildId = guild.Id;
                     var discordMember = guild.Members.FirstOrDefault(m => m.Key == member.UserId).Value;
-
+                    
+                    _logger.LogInformation($"User with name {discordMember.DisplayName} has been member for {_levelRoleRepository.GetDays(discordMember.JoinedAt)} days");
+                    
                     var levelRole = await _levelRoleRepository.GetLevelFromDiscordMember(discordMember, guildId);
                     if (levelRole.status != Status.Found) continue;
                     
@@ -178,7 +181,7 @@ namespace MacintoshBot.ClientHandler
                             upgrades++;
                         }
                 }
-
+            _logger.LogInformation($"Successfully upgraded {upgrades} users roles");
             return upgrades;
         }
 
@@ -268,7 +271,8 @@ namespace MacintoshBot.ClientHandler
         {
             try
             {
-                var jsonFactResponse = await _httpClient.GetStringAsync("https://uselessfacts.jsph.pl/today.json?language=en");
+                var httpClient = _clientFactory.CreateClient("MacintoshBot");
+                var jsonFactResponse = await httpClient.GetStringAsync("https://uselessfacts.jsph.pl/today.json?language=en");
                 var factRead = JsonConvert.DeserializeObject<DailyFactJson>(jsonFactResponse);
                 
                 if (factRead == null) return;
@@ -280,7 +284,7 @@ namespace MacintoshBot.ClientHandler
             }
             catch (Exception e)
             {
-                _logger.LogError($"Error occured when sending daily fact, error: {e.Message}");
+                _logger.LogError($"Error occured when sending daily fact, error: {e}");
             }
         }
     }

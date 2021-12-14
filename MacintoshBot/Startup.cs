@@ -57,6 +57,12 @@ namespace MacintoshBot
             services.AddScoped<IChannelRepository, ChannelRepository>();
             services.AddScoped<IFactRepository, FactRepository>();
             services.AddSingleton<ClientConfig>();
+            
+            // http client related
+            services.AddHttpClient("MacintoshBot").ConfigurePrimaryHttpMessageHandler(_ => new HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true
+            });
 
             //Models
             services.AddScoped<IXpGrantModel, XpGrantModel>();

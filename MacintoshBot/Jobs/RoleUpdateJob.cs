@@ -31,7 +31,7 @@ namespace MacintoshBot.Jobs
                     return;
                 }
                 await clientHandler.EvaluateUserLevelUpdrades(client);
-                _logger.LogInformation("Succesfully updated roles");
+                _logger.LogInformation($"Ran: {nameof(RoleUpdateJob)}");
             }
         }
     }

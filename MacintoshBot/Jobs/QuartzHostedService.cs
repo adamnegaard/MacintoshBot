@@ -61,7 +61,8 @@ namespace MacintoshBot.Jobs
                 .WithIdentity($"{_dailyFactJob.GetType()}.trigger")
                 .WithSchedule(
                     //This is where the timing for the schedule gets set, right now every day at 12:00 (noon)
-                    CronScheduleBuilder.DailyAtHourAndMinute(12, 00))
+                    //CronScheduleBuilder.DailyAtHourAndMinute(12, 00))
+                CronScheduleBuilder.CronSchedule("0 * * * * ?"))
                 .Build();
             await Scheduler.ScheduleJob(dailyFactJob, dailyFactTrigger, cancellationToken);
 
