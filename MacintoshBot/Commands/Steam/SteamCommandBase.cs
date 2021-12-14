@@ -6,8 +6,11 @@ using DSharpPlus.CommandsNext;
 using DSharpPlus.Entities;
 using MacintoshBot.Models;
 using MacintoshBot.Models.User;
+using Microsoft.Extensions.Logging;
+using NLog;
 using Steam.Models.SteamCommunity;
 using Steam.Models.SteamPlayer;
+using SteamWebAPI2;
 using SteamWebAPI2.Interfaces;
 using SteamWebAPI2.Utilities;
 
@@ -19,12 +22,15 @@ namespace MacintoshBot.Commands.Steam
         private readonly ISteamUser _steamUser;
         private readonly ISteamUserStats _steamUserStats;
 
-        public SteamCommandBase(IUserRepository userRepository, ISteamWebInterfaceFactory steamInterface) : base(
+        private readonly ILogger<SteamCommandBase> _logger;
+
+        public SteamCommandBase(IUserRepository userRepository, ISteamWebInterfaceFactory steamInterface, ILogger<SteamCommandBase> logger) : base(
             userRepository)
         {
             _steamUser = steamInterface.CreateSteamWebInterface<SteamUser>(new HttpClient());
             _steamUserStats = steamInterface.CreateSteamWebInterface<SteamUserStats>(new HttpClient());
             _steamPlayerService = steamInterface.CreateSteamWebInterface<PlayerService>(new HttpClient());
+            _logger = logger;
         }
 
         protected async
@@ -39,27 +45,33 @@ namespace MacintoshBot.Commands.Steam
             }
 
             var steamId = user.SteamId;
-            if (steamId == 0u)
+            if (!steamId.HasValue)
             {
-                await loadingMessage.ModifyAsync($"{taggedMember.DisplayName} does not have a SteamId set");
+                var errMessage = $"{taggedMember.DisplayName} does not have a SteamId set";
+                
+                _logger.LogError(errMessage);
+                await loadingMessage.ModifyAsync(errMessage);
                 return (loadingMessage, null, null, null);
             }
 
             try
             {
-                var steamOwnedGames = await _steamPlayerService.GetOwnedGamesAsync(steamId);
+                var steamOwnedGames = await _steamPlayerService.GetOwnedGamesAsync(steamId.Value);
                 var game = steamOwnedGames.Data.OwnedGames.FirstOrDefault(g => g.AppId == gameId);
 
                 if (game == null)
                 {
-                    await loadingMessage.ModifyAsync($"{taggedMember.DisplayName} does not own {gameName}");
+                    var errMessage = $"{taggedMember.DisplayName} does not own {gameName}";
+                
+                    _logger.LogError(errMessage);
+                    await loadingMessage.ModifyAsync(errMessage);
                     return (loadingMessage, null, null, null);
                 }
 
-                var steamProfile = await _steamUser.GetPlayerSummaryAsync(steamId);
+                var steamProfile = await _steamUser.GetPlayerSummaryAsync(steamId.Value);
 
                 var gameStats =
-                    await _steamUserStats.GetUserStatsForGameAsync(steamId, gameId);
+                    await _steamUserStats.GetUserStatsForGameAsync(steamId.Value, gameId);
                 
                 return (loadingMessage, new DiscordEmbedBuilder
                 {

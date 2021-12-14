@@ -5,6 +5,7 @@ using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using MacintoshBot.Models.User;
 using MacintoshBot.SteamStats;
+using Microsoft.Extensions.Logging;
 using SteamWebAPI2.Utilities;
 
 namespace MacintoshBot.Commands.Steam
@@ -14,9 +15,14 @@ namespace MacintoshBot.Commands.Steam
     {
         private const uint RustGameId = 252490;
         private const string RustGameName = "Rust";
+        
+        private readonly ILogger<RustCommands> _logger;
 
-        public RustCommands(IUserRepository userRepository, ISteamWebInterfaceFactory steamInterface) : base(
-            userRepository, steamInterface) { }
+        public RustCommands(IUserRepository userRepository, ISteamWebInterfaceFactory steamInterface, ILogger<RustCommands> logger) : base(
+            userRepository, steamInterface, logger)
+        {
+            _logger = logger;
+        }
 
         [Command(nameof(RustStats))]
         [Description("Check your Rust stats")]

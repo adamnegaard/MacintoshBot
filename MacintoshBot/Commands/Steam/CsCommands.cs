@@ -5,6 +5,7 @@ using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using MacintoshBot.Models.User;
 using MacintoshBot.SteamStats;
+using Microsoft.Extensions.Logging;
 using SteamWebAPI2.Utilities;
 
 namespace MacintoshBot.Commands.Steam
@@ -14,9 +15,14 @@ namespace MacintoshBot.Commands.Steam
     {
         private const uint CsGameId = 730;
         private const string CsGameName = "CSGO";
+        
+        private readonly ILogger<CsCommands> _logger;
 
-        public CsCommands(IUserRepository userRepository, ISteamWebInterfaceFactory steamInterface) : base(
-            userRepository, steamInterface) { }
+        public CsCommands(IUserRepository userRepository, ISteamWebInterfaceFactory steamInterface, ILogger<CsCommands> logger) : base(
+            userRepository, steamInterface, logger)
+        {
+            _logger = logger;
+        }
 
         [Command(nameof(CsStats))]
         [Description("Check your Counter Strike stats")]
