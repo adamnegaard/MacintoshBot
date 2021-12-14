@@ -65,13 +65,19 @@ namespace MacintoshBot
             _logger.LogInformation($"Recieved {nameof(OnGuildMemberUpdated)} event");
             var pendingAfter = eventArgs.PendingAfter;
             var roles = eventArgs.Member.Roles;
+
+            var guildId = eventArgs.Guild.Id;
+            var joinedMember = eventArgs.Member;
+            
             // only assign the roles if user has passed screening and does not have any roles yet
             if (pendingAfter == false && !roles.Any())
             {
-                var guildId = eventArgs.Guild.Id;
-                var joinedMember = eventArgs.Member;
                 _logger.LogInformation($"User with Id: {joinedMember.Id} joined guild with Id: {guildId}");
                 await AssignNewUserRoles(joinedMember, guildId);
+            } 
+            else if (eventArgs.PendingBefore == true && pendingAfter == true)
+            {
+                _logger.LogInformation($"User with Id: {joinedMember.Id} was updated but has not accepted the screening");
             }
         }
 
@@ -163,14 +169,14 @@ namespace MacintoshBot
             //User enters a voice channel
             if ((eventArgs.Before == null || eventArgs.Before.Channel == null) && eventArgs.After != null)
             {
-                _logger.LogInformation($"Member with Id: {eventArgs.User.Id} joined channel with id {eventArgs.After.Channel.Id}");
+                _logger.LogInformation($"Member with Id: {eventArgs.User.Id} joined channel with Id {eventArgs.After.Channel.Id}");
                 _xpGrantModel.EnterVoiceChannel(eventArgs.User.Id, guildId);
             }
             //User exits a voice channel
             else if (eventArgs.Before != null && (eventArgs.After == null || eventArgs.After.Channel == null))
             {
                 var gainedXp = await _xpGrantModel.ExitVoiceChannel(eventArgs.User.Id, guildId);
-                _logger.LogInformation($"Member with Id: {eventArgs.User.Id} left channel with id {eventArgs.Before.Channel.Id}\nGained {gainedXp} XP");
+                _logger.LogInformation($"Member with Id: {eventArgs.User.Id} left channel with Id {eventArgs.Before.Channel.Id}\nGained {gainedXp} XP");
             }
         }
         

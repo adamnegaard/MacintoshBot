@@ -48,8 +48,9 @@ namespace MacintoshBot.XpHandlers
                 return member.user.Xp;
             }
 
-            var timeInChat = (now - startTime).TotalMinutes;
-            return await _userRepository.AddXp(memberId, guildId, Convert.ToInt32(timeInChat));
+            var timeInChat = Convert.ToInt32((now - startTime).TotalMinutes);
+            await _userRepository.AddXp(memberId, guildId, timeInChat);
+            return timeInChat;
         }
     }
 }

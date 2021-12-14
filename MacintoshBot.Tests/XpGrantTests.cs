@@ -30,8 +30,8 @@ namespace MacintoshBot.Tests
         }
 
         [Theory]
-        [InlineData(-5, 4, 1, 1005)]
-        [InlineData(-10, 1, 1, 608)]
+        [InlineData(-5, 4, 1, 5)]
+        [InlineData(-10, 1, 1, 10)]
         [InlineData(-100, 2, 1, 100)]
         [InlineData(-567, 2, 2, 567)]
         [InlineData(10, 3, 1, 95)]
@@ -39,9 +39,9 @@ namespace MacintoshBot.Tests
         {
             var beginTime = DateTime.Now.AddMinutes(minutesAgo);
 
-            var newXp = await _xpGrantModel.GetNewXpFromStartTime(beginTime, memberId, guildId);
+            var gainedXp = await _xpGrantModel.GetNewXpFromStartTime(beginTime, memberId, guildId);
 
-            Assert.Equal(expected, newXp);
+            Assert.Equal(expected, gainedXp);
         }
     }
 }
