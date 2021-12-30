@@ -45,19 +45,32 @@ namespace MacintoshBot.Commands
             var guildId = ctx.Guild.Id;
             if (member == null)
             {
-                await ctx.Channel.SendMessageAsync("No member specified for making moderator");
+                await ctx.RespondAsync("No member specified for making moderator");
                 return;
             }
 
             var modRole = ctx.Guild.Roles.Values.FirstOrDefault(r => r.Name.ToLower().Contains("mod"));
             if (modRole == null)
             {
-                await ctx.Channel.SendMessageAsync("Internal error, could not find moderator role");
+                await ctx.RespondAsync("Internal error, could not find moderator role");
                 return;
             }
 
             await _clientHandler.MakeMemberMod(ctx.Client, member, modRole, guildId);
-            await ctx.Channel.SendMessageAsync($"Made {member.Mention} a moderator!");
+            //Send a confirmation
+            var succesEmbed = new DiscordEmbedBuilder
+            {
+                Title = $"Granted Moderator Permissions",
+                Thumbnail = new DiscordEmbedBuilder.EmbedThumbnail
+                {
+                    Url = member.AvatarUrl
+                }
+            };
+            
+            succesEmbed.AddField("Member", $"{member.Mention}");
+            succesEmbed.AddField("Role", $"{modRole.Mention}");
+
+            await ctx.RespondAsync(MacintoshEmbed.Create(succesEmbed));
         }
 
         [Command(nameof(UnMod))]
@@ -69,19 +82,32 @@ namespace MacintoshBot.Commands
             var guildId = ctx.Guild.Id;
             if (member == null)
             {
-                await ctx.Channel.SendMessageAsync("No member specified for making moderator");
+                await ctx.RespondAsync("No member specified for making moderator");
                 return;
             }
 
             var modRole = ctx.Guild.Roles.Values.FirstOrDefault(r => r.Name.ToLower().Contains("mod"));
             if (modRole == null)
             {
-                await ctx.Channel.SendMessageAsync("Internal error, could not find moderator role");
+                await ctx.RespondAsync("Internal error, could not find moderator role");
                 return;
             }
 
             await _clientHandler.MakeUnMod(ctx.Client, member, modRole, guildId);
-            await ctx.Channel.SendMessageAsync($"Revoked the moderator role from {member.Mention}");
+
+            //Send a confirmation
+            var succesEmbed = new DiscordEmbedBuilder
+            {
+                Title = $"Revoked Moderator Permissions",
+                Thumbnail = new DiscordEmbedBuilder.EmbedThumbnail
+                {
+                    Url = member.AvatarUrl
+                }
+            };
+            
+            succesEmbed.AddField("Member", $"{member.Mention}");
+
+            await ctx.RespondAsync(MacintoshEmbed.Create(succesEmbed));
         }
 
         [Command(nameof(GrantRole))]
@@ -100,12 +126,25 @@ namespace MacintoshBot.Commands
                     await _clientHandler.RevokeOtherRoles(ctx.Client, member, levelRole.role, guildId);
                 //Grant the role to the user
                 await member.GrantRoleAsync(role);
+                
                 //Send a confirmation
-                await ctx.Channel.SendMessageAsync($"Done! {member.DisplayName} is now a {role.Name}");
+                var succesEmbed = new DiscordEmbedBuilder
+                {
+                    Title = $"Granted New Role",
+                    Thumbnail = new DiscordEmbedBuilder.EmbedThumbnail
+                    {
+                        Url = member.AvatarUrl
+                    }
+                };
+            
+                succesEmbed.AddField("Member", $"{member.Mention}");
+                succesEmbed.AddField("Role", $"{role.Mention}");
+
+                await ctx.RespondAsync(MacintoshEmbed.Create(succesEmbed));
             }
             else
             {
-                await ctx.Channel.SendMessageAsync("Use the ?makemod command instead");
+                await ctx.RespondAsync("Use the ?makemod command instead");
             }
         }
 
@@ -169,7 +208,7 @@ namespace MacintoshBot.Commands
         {
             var guildId = ctx.Guild.Id;
             //Send a working on it message and save it so we can modify it later. 
-            var message = await ctx.Channel.SendMessageAsync("Working on it...");
+            var message = await ctx.RespondAsync("Working on it...");
             //Create the role
             var role = await CreateGroupRole(ctx, name, isGame);
             //Check if it did not get created
@@ -235,8 +274,17 @@ namespace MacintoshBot.Commands
             }
 
             //Send a confirmation
-            await message.ModifyAsync(
-                $"Done! Created channel {channel} for {role.Mention}'s.\nGet access to the channel by reacting with {emoji} in {rolesChannel.Mention}.");
+            var succesEmbed = new DiscordEmbedBuilder
+            {
+                Title = $"Created {(isGame ? "Game" : "Group")}",
+                Description = $"Get access to the channel by reacting with {emoji} in {rolesChannel.Mention}."
+            };
+            
+           succesEmbed.AddField("Channel", $"{channel}", true);
+           succesEmbed.AddField("Role", $"{role.Mention}", true);
+           succesEmbed.AddField("Emoji", $"{emoji}", true);
+           
+           await message.ModifyAsync(MacintoshEmbed.Create(succesEmbed));
         }
 
         [Command(nameof(RemoveGroup))]
@@ -247,7 +295,7 @@ namespace MacintoshBot.Commands
         {
             var guildId = ctx.Guild.Id;
             //Send a working on it message and save it so we can modify it later. 
-            var message = await ctx.Channel.SendMessageAsync("Working on it...");
+            var message = await ctx.RespondAsync("Working on it...");
             //Get the group
             var group = await _groupRepository.Get(name, guildId);
             if (group.status != Status.Found)
@@ -298,8 +346,14 @@ namespace MacintoshBot.Commands
             }
 
             //Send a confirmation
-            await message.ModifyAsync(
-                $"Done! Deleted channel `{channel.Name.Replace("-", "")}` for `{roleName}`'s.");
+            var succesEmbed = new DiscordEmbedBuilder
+            {
+                Title = $"Removed {(group.group.IsGame ? "Game" : "Group")}",
+            };
+            
+            succesEmbed.AddField("Name", group.group.Name);
+            
+            await message.ModifyAsync(MacintoshEmbed.Create(succesEmbed));
         }
 
         private async Task<DiscordRole> CreateGroupRole(CommandContext ctx, string name, bool isGame)
@@ -325,7 +379,7 @@ namespace MacintoshBot.Commands
             await ctx.Guild.CreateVoiceChannelAsync(
                 $"{DiscordEmoji.FromName(ctx.Client, ":game_die:")}{name.ToUpper()} ROOM 2", newChannel);
             //Return the uppercase name.
-            return $"`{name.ToUpper()}`";
+            return $"{name.ToUpper()}";
         }
 
         private async Task<string> CreateChannelHangout(CommandContext ctx, string name, DiscordRole newRole)
@@ -338,7 +392,7 @@ namespace MacintoshBot.Commands
             await ctx.Guild.CreateVoiceChannelAsync($"{DiscordEmoji.FromName(ctx.Client, ":telephone_receiver:")}talk",
                 newChannel);
             //Return the uppercase name.
-            return $"`{name.ToUpper()}`";
+            return $"{name.ToUpper()}";
         }
 
         private IEnumerable<DiscordOverwriteBuilder> CreateOverWritePermissions(CommandContext ctx, DiscordRole newRole)

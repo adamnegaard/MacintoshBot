@@ -37,7 +37,7 @@ namespace MacintoshBot.Commands
             //If we can find the user in the database, return
             if (actualUser.status != Status.Found)
             {
-                await ctx.Channel.SendMessageAsync($"Could not find user {member.DisplayName} in the database");
+                await ctx.RespondAsync($"Could not find user {member.DisplayName} in the database");
                 return;
             }
 
@@ -64,7 +64,7 @@ namespace MacintoshBot.Commands
             }
 
             //Send the embed to the channel.
-            await ctx.Channel.SendMessageAsync(MacintoshEmbed.Create(levelEmbed));
+            await ctx.RespondAsync(MacintoshEmbed.Create(levelEmbed));
         }
     }
 }

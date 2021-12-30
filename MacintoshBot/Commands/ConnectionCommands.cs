@@ -51,9 +51,9 @@ namespace MacintoshBot.Commands
             }
             
             if (embed == null)
-                await ctx.Channel.SendMessageAsync($"Did not recognize the platform in the profile details: {profileDetails}");
+                await ctx.RespondAsync($"Did not recognize the platform in the profile details: {profileDetails}");
 
-            await ctx.Channel.SendMessageAsync(MacintoshEmbed.Create(embed));
+            await ctx.RespondAsync(MacintoshEmbed.Create(embed));
         }
 
         public async Task<DiscordEmbedBuilder> LinkSummonerName(UserUpdateDTO userUpdate, string profilePage)

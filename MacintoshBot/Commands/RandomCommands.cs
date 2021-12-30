@@ -35,7 +35,20 @@ namespace MacintoshBot.Commands
             [Description("(Optional) max value")] int max = 7)
         {
             var random = new Random();
-            await ctx.Channel.SendMessageAsync($"{ctx.Member.DisplayName} rolled: {random.Next(min, max)}");
+            
+            //Send a confirmation
+            var roleEmbed = new DiscordEmbedBuilder
+            {
+                Title = $"Rolled",
+                Thumbnail = new DiscordEmbedBuilder.EmbedThumbnail
+                {
+                    Url = ctx.Member.AvatarUrl
+                }
+            };
+            
+            roleEmbed.AddField("Value", $"{random.Next(min, max)}");
+
+            await ctx.RespondAsync(MacintoshEmbed.Create(roleEmbed));
         }
 
         [Command(nameof(Fact))]
@@ -45,7 +58,7 @@ namespace MacintoshBot.Commands
             var fact = await _factRepository.Get(num);
             if (fact.status != Status.Found)
             {
-                await ctx.Channel.SendMessageAsync($"Could not find the fact with Id {num}");
+                await ctx.RespondAsync($"Could not find the fact with Id {num}");
                 return;
             }
 
@@ -60,7 +73,7 @@ namespace MacintoshBot.Commands
             var files = await _fileRepository.Get(guildId);
             if (files == null)
             {
-                await ctx.Channel.SendMessageAsync("Something went wrong");
+                await ctx.RespondAsync("Something went wrong");
                 return;
             }
 
@@ -72,7 +85,7 @@ namespace MacintoshBot.Commands
                 if (!files.Last().Equals(fileTitle)) builder.Append(", ");
             }
 
-            await ctx.Member.SendMessageAsync(builder.ToString());
+            await ctx.RespondAsync(builder.ToString());
         }
 
         [Command(nameof(Get))]
@@ -84,7 +97,7 @@ namespace MacintoshBot.Commands
             var response = await _fileRepository.Get(fileTitle, guildId);
             if (response.status != Status.Found)
             {
-                await ctx.Channel.SendMessageAsync(
+                await ctx.RespondAsync(
                     $"Could not find the file {fileTitle} in the database, try `?files`");
                 return;
             }
@@ -95,7 +108,8 @@ namespace MacintoshBot.Commands
                 Title = file.Title,
                 ImageUrl = file.Location
             };
-            await ctx.Channel.SendMessageAsync(MacintoshEmbed.Create(imageEmbed));
+            
+            await ctx.RespondAsync(MacintoshEmbed.Create(imageEmbed));
         }
 
         [Command(nameof(AddFile))]
@@ -106,30 +120,40 @@ namespace MacintoshBot.Commands
             var message = ctx.Message;
             var guildId = ctx.Guild.Id;
             var attachments = message.Attachments;
-            if (!attachments.Any())
+            
+            var attachment = attachments.FirstOrDefault();
+            if (attachment == null)
             {
-                await ctx.Channel.SendMessageAsync("Please attach something!");
+                await ctx.RespondAsync("Please attach something!");
                 return;
             }
 
-            foreach (var attachment in attachments)
+            var file = new FileDTO
             {
-                var file = new FileDTO
-                {
-                    Title = fileTitle,
-                    GuildId = guildId,
-                    Location = attachment.Url
-                };
+                Title = fileTitle,
+                GuildId = guildId,
+                Location = attachment.Url
+            };
 
-                var response = await _fileRepository.Create(file);
-                if (response.status != Status.Created)
-                {
-                    await ctx.Channel.SendMessageAsync("Uknown error, could not create the file");
-                    return;
-                }
-
-                await ctx.Channel.SendMessageAsync($"Added the file under the name {fileTitle}");
+            var response = await _fileRepository.Create(file);
+            if (response.status != Status.Created)
+            {
+                await ctx.RespondAsync("Uknown error, could not create the file");
+                return;
             }
+            
+            var roleEmbed = new DiscordEmbedBuilder
+            {
+                Title = $"Added file",
+                Thumbnail = new DiscordEmbedBuilder.EmbedThumbnail
+                {
+                    Url = file.Location
+                }
+            };
+        
+            roleEmbed.AddField("Title", $"{fileTitle}");
+
+            await ctx.RespondAsync(MacintoshEmbed.Create(roleEmbed));
         }
     }
 }

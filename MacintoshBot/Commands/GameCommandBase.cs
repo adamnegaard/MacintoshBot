@@ -20,7 +20,7 @@ namespace MacintoshBot.Commands
         {
             //Check if the member is null, if it is set the member to the one who queried.
             if (member == null) member = ctx.Member;
-            var loadingMessage = await ctx.Channel.SendMessageAsync($"Getting {member.DisplayName}'s stats...");
+            var loadingMessage = await ctx.RespondAsync($"Getting {member.DisplayName}'s stats...");
             var user = await GetUserFromContext(ctx, member);
             if (user == null)
             {
