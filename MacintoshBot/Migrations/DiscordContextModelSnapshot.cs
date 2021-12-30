@@ -203,6 +203,39 @@ namespace MacintoshBot.Migrations
 
                     b.ToTable("users");
                 });
+
+            modelBuilder.Entity("MacintoshBot.Entities.VoiceState", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn);
+
+                    b.Property<DateTime>("EnteredTime")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("entered_ts");
+
+                    b.Property<decimal>("GuildId")
+                        .HasColumnType("numeric(20,0)")
+                        .HasColumnName("guild_id");
+
+                    b.Property<DateTime?>("LeftTime")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("left_ts");
+
+                    b.Property<DateTime?>("MovedTime")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("moved_time");
+
+                    b.Property<decimal>("UserId")
+                        .HasColumnType("numeric(20,0)")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("voice_states");
+                });
 #pragma warning restore 612, 618
         }
     }

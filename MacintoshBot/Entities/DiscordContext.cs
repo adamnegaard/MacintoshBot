@@ -16,6 +16,7 @@ namespace MacintoshBot.Entities
         public DbSet<Role> LevelRoles { get; set; }
         public DbSet<Channel> Channels { get; set; }
         public DbSet<Fact> Facts { get; set; }
+        public DbSet<VoiceState> VoiceStates { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -60,6 +61,11 @@ namespace MacintoshBot.Entities
             {
                 entity
                     .HasKey(f => f.Id);
+            });
+            modelBuilder.Entity<VoiceState>(entity =>
+            {
+                entity
+                    .HasKey(vs => vs.Id);
             });
 
             //For serial keys

@@ -136,30 +136,38 @@ namespace MacintoshBot
             _logger.LogInformation($"Sent member leave message: {message}");
         }
 
-        private async Task OnGuildAvailable(DiscordClient client, GuildCreateEventArgs eventArgs)
+        private Task OnGuildAvailable(DiscordClient client, GuildCreateEventArgs eventArgs)
         {
-            _logger.LogInformation($"Recieved {nameof(OnGuildAvailable)} event");
-            var guildId = eventArgs.Guild.Id;
-            var assignMessage = await _messageRepository.GetMessageId("role", guildId);
-            if (assignMessage.status != Status.Found)
+            // for some reason, the event does not finish if it is awaited. So here the code is offloaded to Task.Run
+            Task.Run(async () =>
             {
-                var newAssignMessage = await _clientHandler.SendSelfAssignMessage(client, guildId);
-                var roleMessage = new MessageDTO
+                _logger.LogInformation($"Recieved {nameof(OnGuildAvailable)} event");
+                var guildId = eventArgs.Guild.Id;
+                var assignMessage = await _messageRepository.GetMessageId("role", guildId);
+                if (assignMessage.status != Status.Found)
                 {
-                    MessageId = newAssignMessage.Id,
-                    GuildId = guildId,
-                    RefName = "role"
-                };
-                var message = await _messageRepository.Create(roleMessage);
-                if (message.status != Status.Created)
-                {
-                    _logger.LogError($"Could not create assign message in database, got status {message.status.ToString()}");
-                    return;
+                    var newAssignMessage = await _clientHandler.SendSelfAssignMessage(client, guildId);
+                    var roleMessage = new MessageDTO
+                    {
+                        MessageId = newAssignMessage.Id,
+                        GuildId = guildId,
+                        RefName = "role"
+                    };
+                    var message = await _messageRepository.Create(roleMessage);
+                    if (message.status != Status.Created)
+                    {
+                        _logger.LogError(
+                            $"Could not create assign message in database, got status {message.status.ToString()}");
+                        return;
+                    }
+
+                    await _clientHandler.SelfAssignRoles(client, guildId);
+                    _logger.LogInformation($"Succesfully sent self assign message in guild with Id: {guildId}");
                 }
-                await _clientHandler.SelfAssignRoles(client, guildId);
-                _logger.LogInformation($"Succesfully sent self assign message in guild with Id: {guildId}");
-            }
-            _logger.LogInformation($"Self assign message already existed, skipping...");
+
+                _logger.LogInformation($"Self assign message already existed, skipping...");
+            });
+            return Task.CompletedTask;
         }
 
         public async Task OnVoiceStateUpdate(DiscordClient client, VoiceStateUpdateEventArgs eventArgs)
@@ -169,14 +177,23 @@ namespace MacintoshBot
             //User enters a voice channel
             if ((eventArgs.Before == null || eventArgs.Before.Channel == null) && eventArgs.After != null)
             {
-                _logger.LogInformation($"Member with Id: {eventArgs.User.Id} joined channel with Id {eventArgs.After.Channel.Id}");
-                _xpGrantModel.EnterVoiceChannel(eventArgs.User.Id, guildId);
+                await _xpGrantModel.EnterVoiceChannel(eventArgs.User.Id, guildId);
+                _logger.LogInformation($"User with username {eventArgs.User.Username} joined channel with name {eventArgs.After.Channel.Name}");
             }
+            
             //User exits a voice channel
             else if (eventArgs.Before != null && (eventArgs.After == null || eventArgs.After.Channel == null))
             {
                 var gainedXp = await _xpGrantModel.ExitVoiceChannel(eventArgs.User.Id, guildId);
-                _logger.LogInformation($"Member with Id: {eventArgs.User.Id} left channel with Id {eventArgs.Before.Channel.Id}\nGained {gainedXp} XP");
+                _logger.LogInformation($"User with username {eventArgs.User.Username} left channel with name {eventArgs.Before.Channel.Name}\nGained {gainedXp} XP");
+            }
+            
+            //User moves to a new channel
+            else if (eventArgs.Before != null && eventArgs.Before.Channel != null && eventArgs.After != null &&
+                     eventArgs.After.Channel != null)
+            {
+                await _xpGrantModel.MoveVoiceChannel(eventArgs.User.Id, guildId);
+                _logger.LogInformation($"User with username {eventArgs.User.Username} moved from channel with name {eventArgs.Before.Channel.Name} to channel with name {eventArgs.After.Channel.Name}");
             }
         }
         

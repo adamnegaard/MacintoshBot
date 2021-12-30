@@ -140,8 +140,7 @@ namespace MacintoshBot.ClientHandler
 
             return role;
         }
-
-        //FIXME.
+        
         public async Task<int> EvaluateUserLevelUpdrades(DiscordClient client)
         {
             var members = await _userRepository.Get();
@@ -153,8 +152,9 @@ namespace MacintoshBot.ClientHandler
                     var guild = client.Guilds.FirstOrDefault(g => g.Key == member.GuildId).Value;
                     var guildId = guild.Id;
                     var discordMember = guild.Members.FirstOrDefault(m => m.Key == member.UserId).Value;
+                    var memberDays = _levelRoleRepository.GetDays(discordMember.JoinedAt);
                     
-                    _logger.LogInformation($"User with name {discordMember.DisplayName} has been member for {_levelRoleRepository.GetDays(discordMember.JoinedAt)} days");
+                    _logger.LogInformation($"User with name {discordMember.DisplayName} has been member for {memberDays.days} days");
                     
                     var levelRole = await _levelRoleRepository.GetLevelFromDiscordMember(discordMember, guildId);
                     if (levelRole.status != Status.Found) continue;
@@ -177,7 +177,7 @@ namespace MacintoshBot.ClientHandler
                             if (role == null) return 0;
                             await RevokeOtherRoles(client, discordMember, nextMemberRole.role, guildId);
                             await discordMember.GrantRoleAsync(role);
-                            _logger.LogInformation( $"Succesfully upgraded user with Id: {member.UserId} from role: {nextMemberRole.role.RefName} to {role.Name}");
+                            _logger.LogInformation( $"Succesfully upgraded user with name: {discordMember.DisplayName} from role: {levelRole.role.RefName} to {nextMemberRole.role.RefName}");
                             upgrades++;
                         }
                 }

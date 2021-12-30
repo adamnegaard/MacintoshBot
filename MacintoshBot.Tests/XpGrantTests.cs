@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using MacintoshBot.Entities;
 using MacintoshBot.Models.User;
+using MacintoshBot.Models.VoiceState;
 using MacintoshBot.Tests.Repositories;
 using MacintoshBot.XpHandlers;
 using Microsoft.Data.Sqlite;
@@ -26,22 +27,10 @@ namespace MacintoshBot.Tests
             context.Database.EnsureCreated();
 
             var userRepository = new UserRepository(context);
-            _xpGrantModel = new XpGrantModel(userRepository);
+            var voiceStateRepository = new VoiceStateRepository(context, null);
+            _xpGrantModel = new XpGrantModel(userRepository, voiceStateRepository, null);
         }
 
-        [Theory]
-        [InlineData(-5, 4, 1, 5)]
-        [InlineData(-10, 1, 1, 10)]
-        [InlineData(-100, 2, 1, 100)]
-        [InlineData(-567, 2, 2, 567)]
-        [InlineData(10, 3, 1, 95)]
-        public async Task TestXpGainedCorretly(int minutesAgo, ulong memberId, ulong guildId, int expected)
-        {
-            var beginTime = DateTime.Now.AddMinutes(minutesAgo);
-
-            var gainedXp = await _xpGrantModel.GetNewXpFromStartTime(beginTime, memberId, guildId);
-
-            Assert.Equal(expected, gainedXp);
-        }
+        // TODO TEST
     }
 }

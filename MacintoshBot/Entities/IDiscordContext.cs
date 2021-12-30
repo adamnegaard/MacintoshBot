@@ -13,6 +13,7 @@ namespace MacintoshBot.Entities
         DbSet<Role> LevelRoles { get; set; }
         DbSet<Channel> Channels { get; set; }
         DbSet<Fact> Facts { get; set; }
+        DbSet<VoiceState> VoiceStates { get; set; }
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     }
 }

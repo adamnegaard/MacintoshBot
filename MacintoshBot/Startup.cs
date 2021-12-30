@@ -11,6 +11,7 @@ using MacintoshBot.Models.Group;
 using MacintoshBot.Models.Message;
 using MacintoshBot.Models.Role;
 using MacintoshBot.Models.User;
+using MacintoshBot.Models.VoiceState;
 using MacintoshBot.XpHandlers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -56,6 +57,7 @@ namespace MacintoshBot
             services.AddScoped<IMessageRepository, MessageRepository>();
             services.AddScoped<IChannelRepository, ChannelRepository>();
             services.AddScoped<IFactRepository, FactRepository>();
+            services.AddScoped<IVoiceStateRepository, VoiceStateRepository>();
             services.AddSingleton<ClientConfig>();
             
             // http client related
