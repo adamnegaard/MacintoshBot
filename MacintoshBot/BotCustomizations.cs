@@ -199,8 +199,8 @@ namespace MacintoshBot
             else if (eventArgs.Before != null && eventArgs.Before.Channel != null && eventArgs.After != null &&
                      eventArgs.After.Channel != null)
             {
-                await _xpGrantModel.MoveVoiceChannel(eventArgs.User.Id, guildId);
-                _logger.LogInformation($"User with username {eventArgs.User.Username} moved from channel with name {eventArgs.Before.Channel.Name} to channel with name {eventArgs.After.Channel.Name}");
+                await _xpGrantModel.UpdateVoiceState(eventArgs.User.Id, guildId);
+                _logger.LogInformation($"User with username {eventArgs.User.Username} updated their voice state");
             }
         }
         

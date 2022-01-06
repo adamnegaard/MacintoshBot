@@ -7,6 +7,6 @@ namespace MacintoshBot.XpHandlers
     {
         Task EnterVoiceChannel(ulong memberId, ulong guildId);
         Task<int> ExitVoiceChannel(ulong memberId, ulong guildId);
-        Task MoveVoiceChannel(ulong memberId, ulong guildId);
+        Task UpdateVoiceState(ulong memberId, ulong guildId);
     }
 }

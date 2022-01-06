@@ -55,7 +55,7 @@ namespace MacintoshBot.XpHandlers
             return 0;
         }
 
-        public async Task MoveVoiceChannel(ulong memberId, ulong guildId)
+        public async Task UpdateVoiceState(ulong memberId, ulong guildId)
         {
             var voiceStateUpdate = new VoiceStateUpdate
             {
