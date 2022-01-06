@@ -35,7 +35,7 @@ namespace MacintoshBot.Jobs
                 var lastUpdate = conn.CurrentState.LastUpdate;
                 var minutesSinceLastUpdate = (now - lastUpdate).TotalMinutes; 
                 // if there has not been an update for three or more minutes
-                if (minutesSinceLastUpdate >= 3)
+                if ((conn.CurrentState.CurrentTrack == null && minutesSinceLastUpdate >= 3) || minutesSinceLastUpdate >= 10)
                 {
                     // send a message to the channel
                     var message = await _client.SendMessageAsync(conn.Channel, $"Left {conn.Channel.Name} due to inactivity");
