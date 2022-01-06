@@ -21,7 +21,12 @@ Set your Riot Api Key (generate one [here](https://developer.riotgames.com/)).
 ```
 dotnet user-secrets set "Riot:ApiKey" "<ApiKey>"
 ```
-
+Set your details for the lavalink configuration (see [this GitHub](https://github.com/freyacodes/Lavalink)).
+```
+dotnet user-secrets set "Lavalink:Host" "<LavaLink host>"
+dotnet user-secrets set "Lavalink:Port" "<LavaLink port>"
+dotnet user-secrets set "Lavalink:Password" "<LavaLink password>"
+```
 ## Building the database
 Change to the root directory of the application `MacintoshBot` and enter the commands:
 ```

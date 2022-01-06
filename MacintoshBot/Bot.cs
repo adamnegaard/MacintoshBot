@@ -5,6 +5,8 @@ using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
+using DSharpPlus.Lavalink;
+using DSharpPlus.Net;
 using MacintoshBot.ClientHandler;
 using MacintoshBot.Commands;
 using MacintoshBot.Commands.Riot;
@@ -23,14 +25,16 @@ namespace MacintoshBot
 {
     public partial class Bot : IHostedService, IDisposable
     {
+        private readonly DiscordClient _client;
+        private readonly CommandsNextExtension _commands;
         private readonly IChannelRepository _channelRepository;
         private readonly IClientHandler _clientHandler;
         private readonly IGroupRepository _groupRepository;
         private readonly ILevelRoleRepository _levelRoleRepository;
         private readonly IMessageRepository _messageRepository;
-        private readonly IServiceProvider _services;
         private readonly IUserRepository _userRepository;
         private readonly IXpGrantModel _xpGrantModel;
+        private readonly LavalinkConfiguration _lavalinkConfiguration; 
         private readonly ILogger<Bot> _logger;
 
         public Bot(IServiceProvider services, DiscordClient client, IUserRepository userRepository,
@@ -39,7 +43,6 @@ namespace MacintoshBot
             IChannelRepository channelRepository, IXpGrantModel xpGrantModel, IClientHandler clientHandler,
             ILogger<Bot> logger)
         {
-            _services = services;
             _client = client;
             _userRepository = userRepository;
             _groupRepository = groupRepository;
@@ -51,14 +54,14 @@ namespace MacintoshBot
             _logger = logger;
 
             //Get the prefix object
-            var config = _services.GetService<ClientConfig>();
-            if (config == null)
+            var discordConfig = services.GetService<ClientConfig>();
+            if (discordConfig == null)
                 throw new InvalidOperationException(
-                    "Add a ClientConfig to the dependencies");
+                    "Add discord configuration to the dependencies");
 
             var commandsConfig = new CommandsNextConfiguration
             {
-                StringPrefixes = new[] {config.Prefix},
+                StringPrefixes = new[] {discordConfig.Prefix},
                 EnableDms = true,
                 EnableMentionPrefix = true,
                 Services = services
@@ -83,11 +86,28 @@ namespace MacintoshBot
             _commands.RegisterCommands<ManageCommands>();
             _commands.RegisterCommands<LevelCommands>();
             _commands.RegisterCommands<RandomCommands>();
+            _commands.RegisterCommands<MusicCommands>();
+            
+            //Get the config object for lavalink
+            var lavalinkConfig = services.GetService<LavalinkConfig>(); 
+            if (lavalinkConfig == null)
+                throw new InvalidOperationException(
+                    "Add Lavalink configuration to the dependencies");
+            
+            var endpoint = new ConnectionEndpoint
+            {
+                Hostname = lavalinkConfig.Host,
+                Port = int.Parse(lavalinkConfig.Port),
+            };
+
+            _lavalinkConfiguration = new LavalinkConfiguration
+            {
+                Password = lavalinkConfig.Password,
+                RestEndpoint = endpoint,
+                SocketEndpoint = endpoint
+            };
         }
-
-        private DiscordClient _client { get; }
-        private CommandsNextExtension _commands { get; }
-
+        
         public void Dispose()
         {
             _client.Dispose();
@@ -95,19 +115,23 @@ namespace MacintoshBot
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Bot started...");
+            _logger.LogInformation("Bot starting...");
             await _client.ConnectAsync(
                 new DiscordActivity("?help", ActivityType.ListeningTo),
-                UserStatus.Online).ConfigureAwait(false);
+                UserStatus.Online);
+            
+            _logger.LogInformation("Lavalink starting...");
+            var lavalink = _client.UseLavalink();
+            await lavalink.ConnectAsync(_lavalinkConfiguration);
         }
 
         public async Task StopAsync(CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Bot stopped...");
-            await _client.DisconnectAsync().ConfigureAwait(false);
+            _logger.LogInformation("Bot stopping...");
+            await _client.DisconnectAsync();
         }
 
-        private Task OnClientReady(DiscordClient client, ReadyEventArgs eventArgs)
+        private static Task OnClientReady(DiscordClient client, ReadyEventArgs eventArgs)
         {
             return Task.CompletedTask;
         }

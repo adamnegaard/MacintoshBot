@@ -6,11 +6,10 @@ namespace MacintoshBot
     {
         public ClientConfig(IConfiguration configuration)
         {
-            _token = configuration.GetConnectionString("DiscordClientSecret");
+            Token = configuration.GetConnectionString("DiscordClientSecret");
         }
-
-        private string _token { get; }
+        
         public string Prefix => "?";
-        public string Token => _token;
+        public string Token { get; private set; }
     }
 }

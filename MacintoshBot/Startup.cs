@@ -59,6 +59,7 @@ namespace MacintoshBot
             services.AddScoped<IFactRepository, FactRepository>();
             services.AddScoped<IVoiceStateRepository, VoiceStateRepository>();
             services.AddSingleton<ClientConfig>();
+            services.AddSingleton<LavalinkConfig>();
             
             // http client related
             services.AddHttpClient("MacintoshBot").ConfigurePrimaryHttpMessageHandler(_ => new HttpClientHandler
@@ -66,6 +67,8 @@ namespace MacintoshBot
                 ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true
             });
 
+            var a = Configuration[""];
+            
             //Models
             services.AddScoped<IXpGrantModel, XpGrantModel>();
             services.AddScoped<IClientHandler, ClientHandler.ClientHandler>();

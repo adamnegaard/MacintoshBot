@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
+using DSharpPlus.Lavalink;
 using MacintoshBot.Models;
 using MacintoshBot.Models.Message;
 using MacintoshBot.Models.Role;
@@ -169,10 +170,16 @@ namespace MacintoshBot
             });
             return Task.CompletedTask;
         }
+        
 
         public async Task OnVoiceStateUpdate(DiscordClient client, VoiceStateUpdateEventArgs eventArgs)
         {
             _logger.LogInformation($"Recieved {nameof(OnVoiceStateUpdate)} event");
+            if (eventArgs.User.IsBot)
+            {
+                _logger.LogInformation($"Voice state update was for bot {eventArgs.User.Username}");
+                return;
+            }
             var guildId = eventArgs.Guild.Id;
             //User enters a voice channel
             if ((eventArgs.Before == null || eventArgs.Before.Channel == null) && eventArgs.After != null)
