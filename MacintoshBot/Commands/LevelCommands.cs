@@ -32,39 +32,11 @@ namespace MacintoshBot.Commands
             var guildId = ctx.Guild.Id;
             //Check if the member is null, if it is set the member to the one who queried.
             if (member == null) member = ctx.Member;
-            //Get the user from the database
-            var actualUser = await _userRepository.Get(member.Id, guildId);
-            //If we can find the user in the database, return
-            if (actualUser.status != Status.Found)
-            {
-                await ctx.RespondAsync($"Could not find user {member.DisplayName} in the database");
-                return;
-            }
-
-            //Start the embed with relevant fields
-            var memberDays = _levelRoleRepository.GetDays(member.JoinedAt);
-
-            var levelEmbed = new DiscordEmbedBuilder
-            {
-                Title = $"{member.DisplayName}'s Profile",
-                Description = $"Member for {memberDays.days} days",
-                Thumbnail = new DiscordEmbedBuilder.EmbedThumbnail
-                {
-                    Url = member.AvatarUrl
-                }
-            };
-            //Add relevant fields
-            levelEmbed.AddField("Level", actualUser.user.Level.ToString(), true);
-            levelEmbed.AddField("Xp", actualUser.user.Xp.ToString(), true);
-            var levelRole = await _levelRoleRepository.GetLevelFromDiscordMember(member, guildId);
-            if (levelRole.status == Status.Found)
-            {
-                var discordRole = await _clientHandler.DiscordRoleFromId(ctx.Client, levelRole.role.RoleId, guildId);
-                levelEmbed.AddField("Role", discordRole.Name, true);
-            }
 
             //Send the embed to the channel.
-            await ctx.RespondAsync(MacintoshEmbed.Create(levelEmbed));
+            var levelEmbed =
+                await _clientHandler.GetLevelEmbed(ctx.Client, guildId, $"{member.DisplayName}'s profile", member);
+            await ctx.RespondAsync(levelEmbed);
         }
     }
 }

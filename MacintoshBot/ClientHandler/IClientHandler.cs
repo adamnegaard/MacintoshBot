@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.Entities;
@@ -9,6 +10,7 @@ namespace MacintoshBot.ClientHandler
     public interface IClientHandler
     {
         Task SelfAssignRoles(DiscordClient client, ulong guildId);
+        Task<DiscordMessageBuilder> GetLevelEmbed(DiscordClient client, ulong guildId, string title, DiscordMember member);
         Task<DiscordMessageBuilder> GetReactionMessage(DiscordClient client, ulong guildId);
         Task<DiscordMessage> SendSelfAssignMessage(DiscordClient client, ulong guildId);
         Task<DiscordRole> DiscordRoleFromId(DiscordClient client, ulong roleId, ulong guildId);

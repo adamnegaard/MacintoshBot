@@ -11,21 +11,22 @@ namespace MacintoshBot.Jobs
     public class QuartzHostedService : IHostedService
     {
         private readonly DailyFactJob _dailyFactJob;
-        private readonly IJobFactory _jobFactory;
         private readonly RoleUpdateJob _roleUpdateJob;
+        private readonly DisconnectChannelsJob _disconnectChannelsJob;
+        private readonly IJobFactory _jobFactory;
         private readonly ISchedulerFactory _schedulerFactory;
         private readonly ILogger<QuartzHostedService> _logger;
 
-        public QuartzHostedService(
-            ISchedulerFactory schedulerFactory, IJobFactory jobFactory, RoleUpdateJob roleUpdateJob,
-            DailyFactJob dailyFactJob, ILogger<QuartzHostedService> logger)
+        public QuartzHostedService(DailyFactJob dailyFactJob, RoleUpdateJob roleUpdateJob, DisconnectChannelsJob disconnectChannelsJob, IJobFactory jobFactory, ISchedulerFactory schedulerFactory, ILogger<QuartzHostedService> logger)
         {
-            _schedulerFactory = schedulerFactory;
-            _jobFactory = jobFactory;
-            _roleUpdateJob = roleUpdateJob;
             _dailyFactJob = dailyFactJob;
+            _roleUpdateJob = roleUpdateJob;
+            _disconnectChannelsJob = disconnectChannelsJob;
+            _jobFactory = jobFactory;
+            _schedulerFactory = schedulerFactory;
             _logger = logger;
         }
+
 
         public IScheduler Scheduler { get; set; }
 
@@ -33,41 +34,38 @@ namespace MacintoshBot.Jobs
         {
             Scheduler = await _schedulerFactory.GetScheduler(cancellationToken);
             Scheduler.JobFactory = _jobFactory;
+            
             //Role updates
-            var roleUpdateJob = JobBuilder
-                .Create(_roleUpdateJob.GetType())
-                .WithIdentity(_roleUpdateJob.GetType().FullName)
-                .WithDescription(_roleUpdateJob.GetType().Name)
-                .Build();
-
-            var roleUpdateTrigger = TriggerBuilder
-                .Create()
-                .WithIdentity($"{_roleUpdateJob.GetType()}.trigger")
-                .WithSchedule(
-                    //This is where the timing for the schedule gets set, right now every day at 00:00 (midnight)
-                    CronScheduleBuilder.DailyAtHourAndMinute(00, 00))
-                .Build();
+            var (roleUpdateJob, roleUpdateTrigger) = BuildJob(_roleUpdateJob, CronScheduleBuilder.DailyAtHourAndMinute(0, 0));
             await Scheduler.ScheduleJob(roleUpdateJob, roleUpdateTrigger, cancellationToken);
-
+            
             //Daily facts
-            var dailyFactJob = JobBuilder
-                .Create(_dailyFactJob.GetType())
-                .WithIdentity(_dailyFactJob.GetType().FullName)
-                .WithDescription(_dailyFactJob.GetType().Name)
-                .Build();
-
-            var dailyFactTrigger = TriggerBuilder
-                .Create()
-                .WithIdentity($"{_dailyFactJob.GetType()}.trigger")
-                .WithSchedule(
-                    //This is where the timing for the schedule gets set, right now every day at 12:00 (noon)
-                    CronScheduleBuilder.DailyAtHourAndMinute(12, 00))
-                .Build();
+            var (dailyFactJob, dailyFactTrigger) = BuildJob(_dailyFactJob, CronScheduleBuilder.DailyAtHourAndMinute(12, 0));
             await Scheduler.ScheduleJob(dailyFactJob, dailyFactTrigger, cancellationToken);
-
+            
+            //Leave channels that have not been updated
+            var (disconnectChannelsJob, disconnectChannelsTrigger) = BuildJob(_disconnectChannelsJob,  CronScheduleBuilder.CronSchedule("0 */1 * ? * *"));
+            await Scheduler.ScheduleJob(disconnectChannelsJob, disconnectChannelsTrigger, cancellationToken);
             
             _logger.LogInformation("Scheduled the registered jobs");
             await Scheduler.Start(cancellationToken);
+        }
+        
+        private static (IJobDetail jobDetail, ITrigger jobTrigger) BuildJob(IJob job, CronScheduleBuilder cronScheduleBuilder)
+        {
+            var jobDetail = JobBuilder
+                .Create(job.GetType())
+                .WithIdentity(job.GetType().FullName)
+                .WithDescription(job.GetType().Name)
+                .Build();
+
+            var jobTrigger = TriggerBuilder
+                .Create()
+                .WithIdentity($"{job.GetType()}.trigger")
+                .WithSchedule(cronScheduleBuilder)
+                .Build();
+
+            return (jobDetail, jobTrigger);
         }
 
         public async Task StopAsync(CancellationToken cancellationToken)

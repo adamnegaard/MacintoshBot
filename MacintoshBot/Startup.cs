@@ -91,6 +91,7 @@ namespace MacintoshBot
             //The timing for our jobs gets set inside the class of QuartzHostedService
             services.AddSingleton<RoleUpdateJob>();
             services.AddSingleton<DailyFactJob>();
+            services.AddSingleton<DisconnectChannelsJob>();
 
             services.AddHostedService<QuartzHostedService>();
         }

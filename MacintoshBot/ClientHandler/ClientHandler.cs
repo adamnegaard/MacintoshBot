@@ -90,6 +90,42 @@ namespace MacintoshBot.ClientHandler
                 await assignMessage.CreateReactionAsync(DiscordEmoji.FromName(client, game.EmojiName));
         }
 
+        public async Task<DiscordMessageBuilder> GetLevelEmbed(DiscordClient client, ulong guildId, string title, DiscordMember member)
+        {
+            //Start the embed with relevant fields
+            var memberDays = _levelRoleRepository.GetDays(member.JoinedAt);
+            
+            //Get the user from the database
+            var actualUser = await _userRepository.Get(member.Id, guildId);
+            //If we can find the user in the database, return
+            if (actualUser.status != Status.Found)
+            {
+                var errorMessage = $"Could not find user {member.DisplayName} in the database";
+                _logger.LogError(errorMessage);
+                return MacintoshEmbed.ErrorEmbed(errorMessage);
+            }
+            var levelEmbed = new DiscordEmbedBuilder
+            {
+                Title = title,
+                Description = $"Member for {memberDays.days} days",
+                Thumbnail = new DiscordEmbedBuilder.EmbedThumbnail
+                {
+                    Url = member.AvatarUrl
+                }
+            };
+            //Add relevant fields
+            levelEmbed.AddField("Level", actualUser.user.Level.ToString(), true);
+            levelEmbed.AddField("Xp", actualUser.user.Xp.ToString(), true);
+            var levelRole = await _levelRoleRepository.GetLevelFromDiscordMember(member, guildId);
+            if (levelRole.status == Status.Found)
+            {
+                var discordRole = await DiscordRoleFromId(client, levelRole.role.RoleId, guildId);
+                levelEmbed.AddField("Role", discordRole.Name, true);
+            }
+
+            return MacintoshEmbed.Create(levelEmbed);
+        }
+
         public async Task<DiscordMessage> SendSelfAssignMessage(DiscordClient client, ulong guildId)
         {
             var server = client.Guilds.Values.FirstOrDefault(g => g.Id == guildId);
@@ -177,7 +213,8 @@ namespace MacintoshBot.ClientHandler
                             if (role == null) return 0;
                             await RevokeOtherRoles(client, discordMember, nextMemberRole.role, guildId);
                             await discordMember.GrantRoleAsync(role);
-                            _logger.LogInformation( $"Succesfully upgraded user with name: {discordMember.DisplayName} from role: {levelRole.role.RefName} to {nextMemberRole.role.RefName}");
+                            await NotifyMemberOfRoleUpgrade(client, discordMember, guild, role);
+                            _logger.LogInformation( $"Succesfully upgraded user with name: {discordMember.DisplayName} from role: {levelRole.role.RefName} to {role.Name}");
                             upgrades++;
                         }
                 }
@@ -286,6 +323,14 @@ namespace MacintoshBot.ClientHandler
             {
                 _logger.LogError($"Error occured when sending daily fact, error: {e}");
             }
+        }
+
+        private async Task NotifyMemberOfRoleUpgrade(DiscordClient client, DiscordMember member, DiscordGuild guild, DiscordRole role)
+        {
+            var levelEmbed =
+                await GetLevelEmbed(client, guild.Id, $"Your role was upgraded to ${role.Name} in ${guild.Name}!", member);
+            await member.SendMessageAsync(levelEmbed);
+            _logger.LogInformation($"Succesfully informed {member.DisplayName} that their role was upgraded to ${role.Name}");
         }
     }
 }
