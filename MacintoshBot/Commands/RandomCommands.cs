@@ -85,7 +85,7 @@ namespace MacintoshBot.Commands
                 if (!files.Last().Equals(fileTitle)) builder.Append(", ");
             }
 
-            await ctx.RespondAsync(builder.ToString());
+            await ctx.Member.SendMessageAsync(builder.ToString());
         }
 
         [Command(nameof(Get))]

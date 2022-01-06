@@ -5,37 +5,49 @@ using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using DSharpPlus.Lavalink;
+using DSharpPlus.Lavalink.EventArgs;
+using Microsoft.Extensions.Logging;
+using NLog;
 
 namespace MacintoshBot.Commands
 {
     [Description("Roles related to playing music")]
     public class MusicCommands : BaseCommandModule
     {
-        
+
+        private readonly ILogger<MusicCommands> _logger;
+
+        public MusicCommands(ILogger<MusicCommands> logger)
+        {
+            _logger = logger;
+        }
+
         [Command(nameof(Join))]
         [Description("Join the current channel the user is in")]
         public async Task Join(CommandContext ctx)
         {
-            if (ctx.Member.VoiceState == null || ctx.Member.VoiceState.Channel == null)
+            if (! await InVoiceChannel(ctx))
             {
-                await ctx.RespondAsync("You are not in a voice channel.");
                 return;
             }
 
             var channel = ctx.Member.VoiceState.Channel;
 
-            await JoinChannel(ctx, channel); 
-            
-            await ctx.RespondAsync($"Joined {channel.Name}!");
+            var conn = await JoinChannel(ctx, channel);
+
+            if (conn != null)
+            {
+                var message = await ctx.RespondAsync($"Joined {channel.Name}!");
+                await message.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client, ":wave:"));
+            }
         }
 
         [Command(nameof(Leave))]
         [Description("Leave the current channel if the user and bot are in the same channel")]
         public async Task Leave(CommandContext ctx)
         {
-            if (ctx.Member.VoiceState == null || ctx.Member.VoiceState.Channel == null)
+            if (! await InVoiceChannel(ctx))
             {
-                await ctx.RespondAsync("You are not in a voice channel.");
                 return;
             }
 
@@ -52,7 +64,7 @@ namespace MacintoshBot.Commands
 
             if (channel.Type != ChannelType.Voice)
             {
-                await ctx.RespondAsync("Not a valid voice channel.");
+                await ctx.RespondAsync("Not a valid voice channel");
                 return;
             }
 
@@ -60,12 +72,16 @@ namespace MacintoshBot.Commands
 
             if (conn == null)
             {
-                await ctx.RespondAsync("Lavalink is not connected.");
+                await ctx.RespondAsync("Lavalink is not connected");
                 return;
             }
 
             await conn.DisconnectAsync();
-            await ctx.RespondAsync($"Left {channel.Name}!");
+            
+            _logger.LogInformation($"{ctx.Member.DisplayName} succesfully disconnected the bot");
+            
+            var message = await ctx.RespondAsync($"Bye!");
+            await message.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client, ":wave:"));
         }
 
         [Command(nameof(Play))]
@@ -73,9 +89,11 @@ namespace MacintoshBot.Commands
         public async Task Play(CommandContext ctx, [Description("The song to play")] [RemainingText] string search)
         {
             var memberChannel = ctx.Member.VoiceState.Channel;
-            if (ctx.Member.VoiceState == null || memberChannel == null)
+            
+            _logger.LogInformation($"{ctx.Member.DisplayName} searched for {search}");
+            
+            if (! await InVoiceChannel(ctx))
             {
-                await ctx.RespondAsync("You are not in a voice channel.");
                 return;
             }
 
@@ -83,7 +101,7 @@ namespace MacintoshBot.Commands
             var node = lava.ConnectedNodes.Values.First();
             
             var conn = node.GetGuildConnection(ctx.Member.VoiceState.Guild);
-            
+
             // return if the current connection is null, and the bot was not able to join now
             if (conn == null)
             {
@@ -94,43 +112,40 @@ namespace MacintoshBot.Commands
                 }
             }
 
+            if (! await InSameChannel(conn, ctx))
+            {
+                return;
+            }
+
             var loadResult = await node.Rest.GetTracksAsync(search);
 
             if (loadResult.LoadResultType == LavalinkLoadResultType.LoadFailed 
                 || loadResult.LoadResultType == LavalinkLoadResultType.NoMatches)
             {
-                await ctx.RespondAsync($"Track search failed for {search}.");
+                await ctx.RespondAsync($"Track search failed for {search}");
+                _logger.LogInformation($"{ctx.Member.DisplayName}'s search for {search} gave no results");
                 return;
             }
 
             var track = loadResult.Tracks.First();
 
             await conn.PlayAsync(track);
+            
+            // leave the channel when finished playing song
+            node.PlaybackFinished += (conn, eventArgs) => OnPlaybackFinished(conn, eventArgs, ctx);
+            
+            _logger.LogInformation($"{ctx.Member.DisplayName} played {track.Title}");
 
-            await ctx.RespondAsync(GetTrackEmbed("Now playing", track));
+            var message = await ctx.RespondAsync(GetTrackEmbed("Now playing", track));
+            await message.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client, ":musical_note:"));
         }
 
-        private DiscordMessageBuilder GetTrackEmbed(string trackPrefix, LavalinkTrack track)
-        {
-            var discordEmbed = new DiscordEmbedBuilder
-            {
-                Title = $"{trackPrefix} {track.Title}",
-                Author = new DiscordEmbedBuilder.EmbedAuthor
-                {
-                    Name = track.Author
-                },
-                Url = track.Uri.ToString()
-            };
-            return MacintoshEmbed.Create(discordEmbed); 
-        }
-        
         [Command(nameof(Pause))]
         [Description("Pause the current playing song")]
         public async Task Pause(CommandContext ctx)
         {
-            if (ctx.Member.VoiceState == null || ctx.Member.VoiceState.Channel == null)
+            if (! await InVoiceChannel(ctx))
             {
-                await ctx.RespondAsync("You are not in a voice channel");
                 return;
             }
 
@@ -151,10 +166,18 @@ namespace MacintoshBot.Commands
                 await ctx.RespondAsync("There are no tracks loaded");
                 return;
             }
+            
+            if (! await InSameChannel(conn, ctx))
+            {
+                return;
+            }
+            
+            _logger.LogInformation($"{ctx.Member.DisplayName} paused {currentTrack.Title}");
 
             await conn.PauseAsync();
             
-            await ctx.RespondAsync(GetTrackEmbed("Paused", currentTrack));
+            var message = await ctx.RespondAsync(GetTrackEmbed("Paused", currentTrack));
+            await message.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client, ":pause_button:"));
         }
         
         [Command(nameof(Resume))]
@@ -184,13 +207,35 @@ namespace MacintoshBot.Commands
                 await ctx.RespondAsync("There are no tracks loaded");
                 return;
             }
+            
+            if (! await InSameChannel(conn, ctx))
+            {
+                return;
+            }
 
             await conn.ResumeAsync();
             
-            await ctx.RespondAsync(GetTrackEmbed("Resumed", currentTrack));
+            _logger.LogInformation($"{ctx.Member.DisplayName} resumed {currentTrack.Title}");
+            
+            var message = await ctx.RespondAsync(GetTrackEmbed("Resumed", currentTrack));
+            await message.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client, ":play_pause:"));
+        }
+        
+        private DiscordMessageBuilder GetTrackEmbed(string trackPrefix, LavalinkTrack track)
+        {
+            var discordEmbed = new DiscordEmbedBuilder
+            {
+                Title = $"{trackPrefix} {track.Title}",
+                Author = new DiscordEmbedBuilder.EmbedAuthor
+                {
+                    Name = track.Author
+                },
+                Url = track.Uri.ToString()
+            };
+            return MacintoshEmbed.Create(discordEmbed); 
         }
 
-        private static async Task<LavalinkGuildConnection> JoinChannel(CommandContext ctx, DiscordChannel channel)
+        private async Task<LavalinkGuildConnection> JoinChannel(CommandContext ctx, DiscordChannel channel)
         {
             var lava = ctx.Client.GetLavalink();
             if (!lava.ConnectedNodes.Any())
@@ -213,8 +258,48 @@ namespace MacintoshBot.Commands
                 await ctx.RespondAsync("Not a valid voice channel.");
                 return null;
             }
+            
+            _logger.LogInformation($"{ctx.Member.DisplayName} succesfully connected the bot");
 
             return await node.ConnectAsync(channel);
+        }
+
+        private async Task<bool> InSameChannel(LavalinkGuildConnection conn, CommandContext ctx)
+        {
+            if (conn.Channel.Id != ctx.Member.VoiceState.Channel.Id)
+            {
+                await ctx.RespondAsync($"Join {conn.Channel.Name} to control music");
+                return false;
+            }
+
+            return true;
+        }
+        
+        private async Task<bool> InVoiceChannel(CommandContext ctx)
+        {
+            if (ctx.Member.VoiceState == null || ctx.Member.VoiceState.Channel == null)
+            {
+                await ctx.RespondAsync("You are not in a voice channel");
+                return false;
+            }
+
+            return true;
+        }
+
+        private async Task OnPlaybackFinished(LavalinkGuildConnection conn, TrackFinishEventArgs eventArgs, CommandContext ctx)
+        {
+            var track = eventArgs.Track;
+            _logger.LogInformation($"Finished playing {track.Title}");
+            _logger.LogInformation($"Leaving channel {conn.Channel.Name} after finishing track");
+            await conn.DisconnectAsync();
+
+            var discordEmbed = new DiscordEmbedBuilder
+            {
+                Title = $"Finished playing {track.Title}",
+            };
+
+            var message = await ctx.Channel.SendMessageAsync(MacintoshEmbed.Create(discordEmbed));
+            await message.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client, ":wave:"));
         }
     }
 }

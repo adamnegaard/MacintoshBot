@@ -44,7 +44,7 @@ namespace MacintoshBot.Jobs
             await Scheduler.ScheduleJob(dailyFactJob, dailyFactTrigger, cancellationToken);
             
             //Leave channels that have not been updated
-            var (disconnectChannelsJob, disconnectChannelsTrigger) = BuildJob(_disconnectChannelsJob,  CronScheduleBuilder.CronSchedule("0 */1 * ? * *"));
+            var (disconnectChannelsJob, disconnectChannelsTrigger) = BuildJob(_disconnectChannelsJob,  CronScheduleBuilder.CronSchedule("0 */3 * ? * *"));
             await Scheduler.ScheduleJob(disconnectChannelsJob, disconnectChannelsTrigger, cancellationToken);
             
             _logger.LogInformation("Scheduled the registered jobs");
