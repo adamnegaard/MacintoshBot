@@ -7,6 +7,7 @@ using DSharpPlus.Entities;
 using DSharpPlus.Lavalink;
 using MacintoshBot.ClientHandler;
 using Microsoft.Extensions.Logging;
+using NLog.Fluent;
 using Quartz;
 
 namespace MacintoshBot.Jobs
@@ -33,19 +34,16 @@ namespace MacintoshBot.Jobs
             {
                 var conn = connectedGuilds.GetValueOrDefault(connectedGuildId);
                 var lastUpdate = conn.CurrentState.LastUpdate;
-                var minutesSinceLastUpdate = (now - lastUpdate).TotalMinutes; 
+                var minutesSinceLastUpdate = (now - lastUpdate).TotalMinutes;
                 // if there has not been an update for three or more minutes
-                if ((conn.CurrentState.CurrentTrack == null && minutesSinceLastUpdate >= 3) || minutesSinceLastUpdate >= 10)
+                if ((conn.CurrentState.CurrentTrack == null && minutesSinceLastUpdate >= 5) || minutesSinceLastUpdate >= 10)
                 {
-                    // send a message to the channel
-                    var message = await _client.SendMessageAsync(conn.Channel, $"Left {conn.Channel.Name} due to inactivity");
-                    await message.CreateReactionAsync(DiscordEmoji.FromName(_client, ":wave:"));
-                    
                     await conn.DisconnectAsync();
-                    _logger.LogInformation($"Disconnected lavalink connection for guild with id {connectedGuildId}, due to inactivity for {minutesSinceLastUpdate} minutes");
+                    _logger.LogInformation(
+                        $"Disconnected lavalink connection for guild with id {connectedGuildId}, due to inactivity for {Convert.ToInt32(minutesSinceLastUpdate)} minutes");
                 }
             }
-            _logger.LogInformation($"Ran: {nameof(DisconnectChannelsJob)}");
+            _logger.LogDebug($"Ran: {nameof(DisconnectChannelsJob)}");
         }
     }
 }

@@ -17,6 +17,11 @@ namespace MacintoshBot
         //A reaction is added to the self assign role message.
         private async Task OnReactionAdded(DiscordClient sender, MessageReactionAddEventArgs eventArgs)
         {
+            // reject if it's a bot 
+            if (eventArgs.User.IsBot)
+            {
+                return;
+            }
             _logger.LogInformation($"Recieved {nameof(OnReactionAdded)} event");
             var guildId = eventArgs.Guild.Id;
             //Get the needed variables
@@ -40,6 +45,11 @@ namespace MacintoshBot
         //A reaction is removed from the self assign role message
         private async Task OnReactionRemoved(DiscordClient sender, MessageReactionRemoveEventArgs eventArgs)
         {
+            // reject if it's a bot 
+            if (eventArgs.User.IsBot)
+            {
+                return;
+            }
             _logger.LogInformation($"Recieved {nameof(OnReactionRemoved)} event");
             var guildId = eventArgs.Guild.Id;
             //Get the needed variables
@@ -63,6 +73,11 @@ namespace MacintoshBot
         // When a member joins the group assign them their role on discord and in the database
         private async Task OnGuildMemberUpdated(DiscordClient client, GuildMemberUpdateEventArgs eventArgs)
         {
+            // reject if it's a bot 
+            if (eventArgs.Member.IsBot)
+            {
+                return;
+            }
             _logger.LogInformation($"Recieved {nameof(OnGuildMemberUpdated)} event");
             var pendingAfter = eventArgs.PendingAfter;
             var roles = eventArgs.Member.Roles;
@@ -108,6 +123,11 @@ namespace MacintoshBot
         //When a member leaves
         private async Task OnMemberRemoved(DiscordClient client, GuildMemberRemoveEventArgs eventArgs)
         {
+            // reject if it's a bot 
+            if (eventArgs.Member.IsBot)
+            {
+                return;
+            }
             _logger.LogInformation($"Recieved {nameof(OnMemberRemoved)} event");
             var leftUser = eventArgs.Member;
             var guildId = eventArgs.Guild.Id;
@@ -174,12 +194,12 @@ namespace MacintoshBot
 
         public async Task OnVoiceStateUpdate(DiscordClient client, VoiceStateUpdateEventArgs eventArgs)
         {
-            _logger.LogInformation($"Recieved {nameof(OnVoiceStateUpdate)} event");
+            // reject if it's a bot 
             if (eventArgs.User.IsBot)
             {
-                _logger.LogInformation($"Voice state update was for bot {eventArgs.User.Username}");
                 return;
             }
+            _logger.LogInformation($"Recieved {nameof(OnVoiceStateUpdate)} event");
             var guildId = eventArgs.Guild.Id;
             //User enters a voice channel
             if ((eventArgs.Before == null || eventArgs.Before.Channel == null) && eventArgs.After != null)
