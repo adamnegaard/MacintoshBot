@@ -38,6 +38,7 @@ namespace MacintoshBot
                         .ConfigureLogging((ctx, logging) =>
                         {
                             // Enable NLog as one of the Logging Provider
+                            logging.SetMinimumLevel(LogLevel.Debug);
                             logging.AddNLog();
                         })
                         .UseNLog()

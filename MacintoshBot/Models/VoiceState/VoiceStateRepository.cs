@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using MacintoshBot.Entities;
@@ -45,6 +47,7 @@ namespace MacintoshBot.Models.VoiceState
                     .Where(vs => vs.UserId == voiceStateUpdate.UserId)
                     .Where(vs => vs.GuildId == voiceStateUpdate.GuildId)
                     .Where(vs => vs.EnteredTime != null && vs.LeftTime == null)
+                    .OrderByDescending(vs => vs.EnteredTime)
                     .FirstOrDefaultAsync();
 
                 if (voiceState == null)
@@ -63,6 +66,43 @@ namespace MacintoshBot.Models.VoiceState
             {
                 _logger.LogError($"Error when updating voice state {e}");
                 return (Status.Error, null); 
+            }
+        }
+        
+        public async Task<IEnumerable<Entities.VoiceState>> EnteredMoreThanNHoursAgo(int n)
+        {
+            var now = DateTime.Now;
+            try
+            {
+                return await _context.VoiceStates
+                    .Where(vs => vs.EnteredTime != null && Convert.ToInt32((now - vs.EnteredTime).TotalMinutes) >= n)
+                    .Where(vs => vs.LeftTime == null)
+                    .ToListAsync();
+            }
+            catch (Exception e)
+            {
+                _logger.LogError($"Error when reading voice states {e}");
+                return new List<Entities.VoiceState>();
+            }
+        }
+
+        public async Task<Status> Delete(int id)
+        {
+            try
+            {
+                var voiceState = await _context.VoiceStates.FirstOrDefaultAsync(vs => vs.Id == id);
+                if (voiceState == null)
+                {
+                    return Status.Deleted;
+                }
+                
+                _context.VoiceStates.Remove(voiceState);
+                return Status.Deleted;
+            }
+            catch (Exception e)
+            {
+                _logger.LogError($"Error when deleting voice states {e}");
+                return Status.Error;
             }
         }
     }

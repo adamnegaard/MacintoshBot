@@ -11,28 +11,22 @@ namespace MacintoshBot.Jobs
     //Followed tutorial at https://andrewlock.net/creating-a-quartz-net-hosted-service-with-asp-net-core/
     public class RoleUpdateJob : IJob
     {
-        private readonly IServiceProvider _services;
+        private readonly IClientHandler _clientHandler;
+        private readonly DiscordClient _client;
         private readonly ILogger<RoleUpdateJob> _logger;
 
-        public RoleUpdateJob(IServiceProvider services, ILogger<RoleUpdateJob> logger)
+        public RoleUpdateJob(IClientHandler clientHandler, DiscordClient client, ILogger<RoleUpdateJob> logger)
         {
-            _services = services;
+            _clientHandler = clientHandler;
+            _client = client;
             _logger = logger;
         }
 
         public async Task Execute(IJobExecutionContext context)
         {
-            using (var scope = _services.CreateScope())
-            {
-                var clientHandler = scope.ServiceProvider.GetService<IClientHandler>();
-                var client = scope.ServiceProvider.GetService<DiscordClient>();
-                if (clientHandler == null)
-                {
-                    return;
-                }
-                await clientHandler.EvaluateUserLevelUpdrades(client);
-                _logger.LogDebug($"Ran: {nameof(RoleUpdateJob)}");
-            }
+            await _clientHandler.EvaluateUserLevelUpdrades(_client);
+            
+            _logger.LogDebug($"Ran: {nameof(RoleUpdateJob)}");
         }
     }
 }

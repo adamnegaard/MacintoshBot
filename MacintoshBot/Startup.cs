@@ -82,16 +82,8 @@ namespace MacintoshBot
             //The discord bot
             services.AddDiscordService();
 
-            //Quarts scheduling services
-            services.AddSingleton<IJobFactory, SingletonJobFactory>();
-            services.AddSingleton<ISchedulerFactory, StdSchedulerFactory>();
-
-            //The timing for our jobs gets set inside the class of QuartzHostedService
-            services.AddSingleton<RoleUpdateJob>();
-            services.AddSingleton<DailyFactJob>();
-            services.AddSingleton<DisconnectChannelsJob>();
-
-            services.AddHostedService<QuartzHostedService>();
+            // Quartz scheduling
+            services.AddQuartzJobs();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

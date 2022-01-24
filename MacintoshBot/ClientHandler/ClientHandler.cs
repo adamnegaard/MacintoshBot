@@ -183,41 +183,42 @@ namespace MacintoshBot.ClientHandler
 
             var upgrades = 0;
             foreach (var member in members)
-                if (member != null)
-                {
-                    var guild = client.Guilds.FirstOrDefault(g => g.Key == member.GuildId).Value;
-                    var guildId = guild.Id;
-                    var discordMember = guild.Members.FirstOrDefault(m => m.Key == member.UserId).Value;
-                    var memberDays = _levelRoleRepository.GetDays(discordMember.JoinedAt);
+            {
+                if (member == null) continue;
+                var guild = client.Guilds.FirstOrDefault(g => g.Key == member.GuildId).Value;
+                var guildId = guild.Id;
+                var discordMember = guild.Members.FirstOrDefault(m => m.Key == member.UserId).Value;
+                if (discordMember.IsBot) continue;
+                var memberDays = _levelRoleRepository.GetDays(discordMember.JoinedAt);
                     
-                    _logger.LogInformation($"User with name {discordMember.DisplayName} has been member for {memberDays.days} days");
+                _logger.LogInformation($"User with name {discordMember.DisplayName} has been member for {memberDays.days} days");
                     
-                    var levelRole = await _levelRoleRepository.GetLevelFromDiscordMember(discordMember, guildId);
-                    if (levelRole.status != Status.Found) continue;
+                var levelRole = await _levelRoleRepository.GetLevelFromDiscordMember(discordMember, guildId);
+                if (levelRole.status != Status.Found) continue;
                     
-                    var nextMemberRole =
-                        await _levelRoleRepository.GetLevelRoleFromTime(discordMember.JoinedAt, guildId);
-                    if (nextMemberRole.status != Status.Found) continue;
+                var nextMemberRole =
+                    await _levelRoleRepository.GetLevelRoleFromTime(discordMember.JoinedAt, guildId);
+                if (nextMemberRole.status != Status.Found) continue;
 
-                    //check if it's a new role (but since it might be an old role, we need to check if it's an upgrade and not a downgrade
-                    var upgradeFromCurrRole = await _levelRoleRepository.GetLevelNext(levelRole.role.Rank, guildId);
-                    if (upgradeFromCurrRole.status != Status.Found)
-                    {
-                        continue;
-                    }
-                        //Do also a null check
-                        if (levelRole.role.RoleId != nextMemberRole.role.RoleId && upgradeFromCurrRole.role != null &&
-                            nextMemberRole.role.RoleId == upgradeFromCurrRole.role.RoleId)
-                        {
-                            var role = await DiscordRoleFromId(client, nextMemberRole.role.RoleId, guildId);
-                            if (role == null) return 0;
-                            await RevokeOtherRoles(client, discordMember, nextMemberRole.role, guildId);
-                            await discordMember.GrantRoleAsync(role);
-                            await NotifyMemberOfRoleUpgrade(client, discordMember, guild, role);
-                            _logger.LogInformation( $"Succesfully upgraded user with name: {discordMember.DisplayName} from role: {levelRole.role.RefName} to {role.Name}");
-                            upgrades++;
-                        }
+                //check if it's a new role (but since it might be an old role, we need to check if it's an upgrade and not a downgrade
+                var upgradeFromCurrRole = await _levelRoleRepository.GetLevelNext(levelRole.role.Rank, guildId);
+                if (upgradeFromCurrRole.status != Status.Found)
+                {
+                    continue;
                 }
+                //Do also a null check
+                if (levelRole.role.RoleId != nextMemberRole.role.RoleId && upgradeFromCurrRole.role != null &&
+                    nextMemberRole.role.RoleId == upgradeFromCurrRole.role.RoleId)
+                {
+                    var role = await DiscordRoleFromId(client, nextMemberRole.role.RoleId, guildId);
+                    if (role == null) return 0;
+                    await RevokeOtherRoles(client, discordMember, nextMemberRole.role, guildId);
+                    await discordMember.GrantRoleAsync(role);
+                    await NotifyMemberOfRoleUpgrade(client, discordMember, guild, role);
+                    _logger.LogInformation( $"Succesfully upgraded user with name: {discordMember.DisplayName} from role: {levelRole.role.RefName} to {role.Name}");
+                    upgrades++;
+                }
+            }
             _logger.LogInformation($"Successfully upgraded {upgrades} users roles");
             return upgrades;
         }
