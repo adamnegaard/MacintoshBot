@@ -30,6 +30,7 @@ namespace MacintoshBot
                     //builder.AddJsonFile($"appsettings.{env}.json", true);
 
                     //Add the user secrets for development environments
+                    Console.WriteLine(hostContext.HostingEnvironment.EnvironmentName);
                     if (hostContext.HostingEnvironment.IsDevelopment()) builder.AddUserSecrets<Program>();
                 })
                 .ConfigureWebHostDefaults(webBuilder =>

@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Net.Http;
 using DSharpPlus;
 using MacintoshBot.ClientHandler;
@@ -42,7 +43,6 @@ namespace MacintoshBot
         {
             // http clients
             services.AddHttpContextAccessor();
-            services.AddSingleton<HttpClient>(new HttpClient());
 
             services.AddDbContext<IDiscordContext, DiscordContext>(options =>
             {
@@ -60,15 +60,13 @@ namespace MacintoshBot
             services.AddScoped<IVoiceStateRepository, VoiceStateRepository>();
             services.AddSingleton<ClientConfig>();
             services.AddSingleton<LavalinkConfig>();
-            
+
             // http client related
             services.AddHttpClient("MacintoshBot").ConfigurePrimaryHttpMessageHandler(_ => new HttpClientHandler
             {
                 ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true
             });
 
-            var a = Configuration[""];
-            
             //Models
             services.AddScoped<IXpGrantModel, XpGrantModel>();
             services.AddScoped<IClientHandler, ClientHandler.ClientHandler>();
