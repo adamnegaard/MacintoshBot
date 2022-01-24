@@ -26,7 +26,7 @@ namespace MacintoshBot
                     //Get the enviroment
                     var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
                     //Add the optional appsettings.json
-                    builder.AddJsonFile($"appsettings.{env}.json", true);
+                    builder.AddJsonFile($"appsettings.Production.json", true);
                     //builder.AddJsonFile($"appsettings.{env}.json", true);
 
                     //Add the user secrets for development environments
