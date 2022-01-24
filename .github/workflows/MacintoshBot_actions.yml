@@ -36,10 +36,8 @@ jobs:
     - name: Deploy
       # run the application in the background
       run: |
-        echo $ASPNETCORE_ENVIRONMENT
-        echo $USER
         cd /home/adam/github-actions/MacintoshBot/repo/MacintoshBot/MacintoshBot/MacintoshBot/bin/Debug/net5.0/linux-x64/publish
-        ls -l
         nohup dotnet exec MacintoshBot.dll &
+        disown
         
       
