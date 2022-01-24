@@ -65,13 +65,6 @@ namespace MacintoshBot.Commands
             await _clientHandler.CreateFactMessage(ctx.Client, fact.fact, ctx.Channel);
         }
 
-        [Command(nameof(Test))]
-        [Description("See the list of available files")]
-        public async Task Test(CommandContext ctx)
-        {
-            await ctx.RespondAsync("Acked");
-        }
-
         [Command(nameof(Files))]
         [Description("See the list of available files")]
         public async Task Files(CommandContext ctx)
