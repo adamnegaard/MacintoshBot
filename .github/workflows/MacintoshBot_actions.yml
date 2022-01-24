@@ -21,3 +21,10 @@ jobs:
       run: dotnet build --no-restore
     - name: Test
       run: dotnet test --no-build --verbosity normal
+    - name: Copy App Settings 
+      # first lets copy the appsettings for the application
+      run: cp ~/github-actions/MacintoshBot/appsettings.Production.json /home/adam/github-actions/MacintoshBot/repo/MacintoshBot/MacintoshBot/MacintoshBot
+    - name: Publish
+      # publish for linux-x64 architectures
+      run: dotnet publish -r linux-x64
+      
