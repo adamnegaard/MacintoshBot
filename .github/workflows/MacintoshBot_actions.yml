@@ -10,6 +10,7 @@ jobs:
     runs-on: self-hosted
     env:
       ASPNETCORE_ENVIRONMENT: Production
+      PORT: 6000
 
     steps:
     - uses: actions/checkout@v2
@@ -31,7 +32,7 @@ jobs:
       run: dotnet publish -r linux-x64
     - name: Kill existing process
       # kill the existing process (assume its on port 6000)
-      run: kill $(lsof -t -i:6000)
+      run: lsof -t -i:$PORT | xargs kill
       continue-on-error: true
     - name: Deploy
       # run the application in the background
