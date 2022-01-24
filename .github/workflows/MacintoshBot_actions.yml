@@ -35,6 +35,10 @@ jobs:
       continue-on-error: true
     - name: Deploy
       # run the application in the background
-      run: nohup dotnet exec /home/adam/github-actions/MacintoshBot/repo/MacintoshBot/MacintoshBot/MacintoshBot/bin/Debug/net5.0/linux-x64/publish/MacintoshBot.dll &
+      run: |
+        echo $ASPNETCORE_ENVIRONMENT
+        echo $USER
+        ls -l
+        nohup dotnet exec /home/adam/github-actions/MacintoshBot/repo/MacintoshBot/MacintoshBot/MacintoshBot/bin/Debug/net5.0/linux-x64/publish/MacintoshBot.dll &
         
       
