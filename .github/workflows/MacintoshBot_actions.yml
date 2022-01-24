@@ -35,9 +35,7 @@ jobs:
       continue-on-error: true
     - name: Deploy
       # run the application in the background
+      # RUNNER_TRACKING_ID is used so the process does not get killed when the build script is finished
       run: |
         cd /home/adam/github-actions/MacintoshBot/repo/MacintoshBot/MacintoshBot/MacintoshBot/bin/Debug/net5.0/linux-x64/publish
-        nohup dotnet exec MacintoshBot.dll &
-        disown
-        
-      
+        RUNNER_TRACKING_ID="" && nohup dotnet exec MacintoshBot.dll &
