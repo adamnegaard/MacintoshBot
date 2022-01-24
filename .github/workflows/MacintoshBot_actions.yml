@@ -30,8 +30,7 @@ jobs:
     - name: Deploy
       # kill the existing process (assume its on port 6000)
       # run the application in the background
-      run: | 
-        kill $(lsof -t -i:6000)
-        nohup dotnet exec /home/adam/github-actions/MacintoshBot/repo/MacintoshBot/MacintoshBot/MacintoshBot/bin/Debug/net5.0/linux-x64/publish/MacintoshBot.dll &
+      run: kill $(lsof -t -i:6000)
+      run: nohup dotnet exec /home/adam/github-actions/MacintoshBot/repo/MacintoshBot/MacintoshBot/MacintoshBot/bin/Debug/net5.0/linux-x64/publish/MacintoshBot.dll &
         
       
