@@ -10,6 +10,7 @@ jobs:
     runs-on: self-hosted
     env:
       ASPNETCORE_ENVIRONMENT: Production
+      # the port here should match the port in appsettings.json
       PORT: 6000
 
     steps:
@@ -38,5 +39,6 @@ jobs:
       # run the application in the background
       # RUNNER_TRACKING_ID is used so the process does not get killed when the build script is finished
       run: |
+        pwd
         cd /home/adam/github-actions/MacintoshBot/repo/MacintoshBot/MacintoshBot/MacintoshBot/bin/Debug/net5.0/linux-x64/publish
         RUNNER_TRACKING_ID="" && nohup dotnet exec MacintoshBot.dll &
