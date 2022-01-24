@@ -27,7 +27,7 @@ jobs:
       run: dotnet test --no-build --verbosity normal
     - name: Copy App Settings 
       # first lets copy the appsettings for the application
-      run: cp ~/github-actions/MacintoshBot/appsettings.Production.json /home/adam/github-actions/MacintoshBot/repo/MacintoshBot/MacintoshBot/MacintoshBot
+      run: cp ../../../appsettings.Production.json MacintoshBot
     - name: Publish
       # publish for linux-x64 architectures
       run: dotnet publish -r linux-x64
@@ -39,6 +39,5 @@ jobs:
       # run the application in the background
       # RUNNER_TRACKING_ID is used so the process does not get killed when the build script is finished
       run: |
-        pwd
-        cd /home/adam/github-actions/MacintoshBot/repo/MacintoshBot/MacintoshBot/MacintoshBot/bin/Debug/net5.0/linux-x64/publish
+        cd MacintoshBot/bin/Debug/net5.0/linux-x64/publish/
         RUNNER_TRACKING_ID="" && nohup dotnet exec MacintoshBot.dll &
