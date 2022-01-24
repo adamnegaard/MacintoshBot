@@ -27,10 +27,11 @@ jobs:
     - name: Publish
       # publish for linux-x64 architectures
       run: dotnet publish -r linux-x64
-    - name: Deploy
+    - name: Kill existing process
       # kill the existing process (assume its on port 6000)
-      # run the application in the background
       run: kill $(lsof -t -i:6000)
+    - name: Deploy
+      # run the application in the background
       run: nohup dotnet exec /home/adam/github-actions/MacintoshBot/repo/MacintoshBot/MacintoshBot/MacintoshBot/bin/Debug/net5.0/linux-x64/publish/MacintoshBot.dll &
         
       
