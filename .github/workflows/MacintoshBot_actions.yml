@@ -10,6 +10,8 @@ jobs:
     runs-on: self-hosted
     env:
       ASPNETCORE_ENVIRONMENT: Production
+      # the port here should match the port in appsettings.json
+      PORT: 6000
 
     steps:
     - uses: actions/checkout@v2
@@ -25,17 +27,17 @@ jobs:
       run: dotnet test --no-build --verbosity normal
     - name: Copy App Settings 
       # first lets copy the appsettings for the application
-      run: cp ~/github-actions/MacintoshBot/appsettings.Production.json /home/adam/github-actions/MacintoshBot/repo/MacintoshBot/MacintoshBot/MacintoshBot
+      run: cp ../../../appsettings.Production.json MacintoshBot
     - name: Publish
       # publish for linux-x64 architectures
       run: dotnet publish -r linux-x64
     - name: Kill existing process
       # kill the existing process (assume its on port 6000)
-      run: kill $(lsof -t -i:6000)
+      run: lsof -t -i:$PORT | xargs kill
       continue-on-error: true
     - name: Deploy
       # run the application in the background
       # RUNNER_TRACKING_ID is used so the process does not get killed when the build script is finished
       run: |
-        cd /home/adam/github-actions/MacintoshBot/repo/MacintoshBot/MacintoshBot/MacintoshBot/bin/Debug/net5.0/linux-x64/publish
+        cd MacintoshBot/bin/Debug/net5.0/linux-x64/publish/
         RUNNER_TRACKING_ID="" && nohup dotnet exec MacintoshBot.dll &
