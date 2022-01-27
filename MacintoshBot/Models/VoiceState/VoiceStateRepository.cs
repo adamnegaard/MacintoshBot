@@ -71,11 +71,12 @@ namespace MacintoshBot.Models.VoiceState
         
         public async Task<IEnumerable<Entities.VoiceState>> EnteredMoreThanNHoursAgo(int n)
         {
-            var now = DateTime.Now;
             try
             {
+                var now = DateTime.Now;
+                var nHoursAgo = now.AddHours(-n);
                 return await _context.VoiceStates
-                    .Where(vs => vs.EnteredTime != null && Convert.ToInt32((now - vs.EnteredTime).TotalMinutes) >= n)
+                    .Where(vs => vs.EnteredTime != null && vs.EnteredTime <= nHoursAgo)
                     .Where(vs => vs.LeftTime == null)
                     .ToListAsync();
             }

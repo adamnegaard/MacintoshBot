@@ -28,6 +28,8 @@ namespace MacintoshBot
                     LoggerFactory = logger,
                     AutoReconnect = true,
                     MinimumLogLevel = LogLevel.Debug,
+                    // might be a bad idea, but will ensure that it reconnects when internet is down
+                    ReconnectIndefinitely = true,
                     //Setting the intents
                     Intents = DiscordIntents.GuildMembers
                               | DiscordIntents.AllUnprivileged
