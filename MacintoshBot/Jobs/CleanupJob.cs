@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using MacintoshBot.Models;
 using MacintoshBot.Models.VoiceState;
 using Microsoft.Extensions.Logging;
 using Quartz;
@@ -23,7 +24,15 @@ namespace MacintoshBot.Jobs
             foreach (var oldVoiceState in oldVoiceStates)
             {
                 _logger.LogInformation($"Got old voice state entered at {oldVoiceState.EnteredTime} for user with id: {oldVoiceState.UserId}");
-                await _voiceStateRepository.Delete(oldVoiceState.Id);
+                var stats = await _voiceStateRepository.Delete(oldVoiceState.Id);
+                if (stats == Status.Deleted)
+                {
+                    _logger.LogInformation($"Deleted old voice state entered at {oldVoiceState.EnteredTime} for user with id: {oldVoiceState.UserId}");
+                }
+                else
+                {
+                    _logger.LogError($"Error when deleting old voice state entered at {oldVoiceState.EnteredTime} for user with id: {oldVoiceState.UserId}");
+                }
             }
             _logger.LogDebug($"Ran: {nameof(RoleUpdateJob)}");
         }

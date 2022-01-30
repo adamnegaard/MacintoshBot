@@ -94,10 +94,11 @@ namespace MacintoshBot.Models.VoiceState
                 var voiceState = await _context.VoiceStates.FirstOrDefaultAsync(vs => vs.Id == id);
                 if (voiceState == null)
                 {
-                    return Status.Deleted;
+                    return Status.BadRequest;
                 }
                 
                 _context.VoiceStates.Remove(voiceState);
+                await _context.SaveChangesAsync();
                 return Status.Deleted;
             }
             catch (Exception e)
