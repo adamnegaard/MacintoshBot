@@ -329,7 +329,7 @@ namespace MacintoshBot.ClientHandler
         private async Task NotifyMemberOfRoleUpgrade(DiscordClient client, DiscordMember member, DiscordGuild guild, DiscordRole role)
         {
             var levelEmbed =
-                await GetLevelEmbed(client, guild.Id, $"Your role was upgraded to ${role.Name} in ${guild.Name}!", member);
+                await GetLevelEmbed(client, guild.Id, $"Your role was upgraded to {role.Name} in {guild.Name}!", member);
             await member.SendMessageAsync(levelEmbed);
             _logger.LogInformation($"Succesfully informed {member.DisplayName} that their role was upgraded to ${role.Name}");
         }
