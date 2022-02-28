@@ -221,7 +221,7 @@ namespace MacintoshBot.Commands
             await message.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client, ":play_pause:"));
         }
         
-        private DiscordMessageBuilder GetTrackEmbed(string trackPrefix, LavalinkTrack track)
+        private DiscordEmbed GetTrackEmbed(string trackPrefix, LavalinkTrack track)
         {
             var discordEmbed = new DiscordEmbedBuilder
             {

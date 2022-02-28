@@ -25,25 +25,33 @@ namespace MacintoshBot.Jobs
 
         public async Task Execute(IJobExecutionContext context)
         {
-            var now = DateTime.Now; 
-            var lava = _client.GetLavalink();
-            var node = lava.ConnectedNodes.Values.First();
-
-            var connectedGuilds = node.ConnectedGuilds;
-            foreach (var connectedGuildId in connectedGuilds.Keys)
+            try
             {
-                var conn = connectedGuilds.GetValueOrDefault(connectedGuildId);
-                var lastUpdate = conn.CurrentState.LastUpdate;
-                var minutesSinceLastUpdate = (now - lastUpdate).TotalMinutes;
-                // if there has not been an update for three or more minutes
-                if ((conn.CurrentState.CurrentTrack == null && minutesSinceLastUpdate >= 5) || minutesSinceLastUpdate >= 10)
+                var now = DateTime.Now; 
+                var lava = _client.GetLavalink();
+                var node = lava.ConnectedNodes.Values.First();
+
+                var connectedGuilds = node.ConnectedGuilds;
+                foreach (var connectedGuildId in connectedGuilds.Keys)
                 {
-                    await conn.DisconnectAsync();
-                    _logger.LogInformation(
-                        $"Disconnected lavalink connection for guild with id {connectedGuildId}, due to inactivity for {Convert.ToInt32(minutesSinceLastUpdate)} minutes");
+                    var conn = connectedGuilds.GetValueOrDefault(connectedGuildId);
+                    var lastUpdate = conn.CurrentState.LastUpdate;
+                    var minutesSinceLastUpdate = (now - lastUpdate).TotalMinutes;
+                    // if there has not been an update for three or more minutes
+                    if ((conn.CurrentState.CurrentTrack == null && minutesSinceLastUpdate >= 5) || minutesSinceLastUpdate >= 10)
+                    {
+                        await conn.DisconnectAsync();
+                        _logger.LogInformation(
+                            $"Disconnected lavalink connection for guild with id {connectedGuildId}, due to inactivity for {Convert.ToInt32(minutesSinceLastUpdate)} minutes");
+                    }
                 }
+                _logger.LogDebug($"Ran: {nameof(DisconnectChannelsJob)}");
             }
-            _logger.LogDebug($"Ran: {nameof(DisconnectChannelsJob)}");
+            catch (NullReferenceException e)
+            {
+                _logger.LogError("Unable to get lavalink", e);
+            }
+           
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -6,6 +7,8 @@ using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
+using DSharpPlus.SlashCommands;
+using DSharpPlus.SlashCommands.Attributes;
 using MacintoshBot.ClientHandler;
 using MacintoshBot.Models;
 using MacintoshBot.Models.Channel;
@@ -15,9 +18,8 @@ using MacintoshBot.Models.Role;
 
 namespace MacintoshBot.Commands
 {
-    [Description("Roles related to management (Only for admins and moderators)")]
-    [RequirePermissions(Permissions.ManageRoles)]
-    public class ManageCommands : BaseCommandModule
+    [SlashRequirePermissions(Permissions.ManageRoles)]
+    public class ManageCommands : ApplicationCommandModule
     {
         private readonly IChannelRepository _channelRepository;
         private readonly IClientHandler _clientHandler;
@@ -35,24 +37,25 @@ namespace MacintoshBot.Commands
             _levelRoleRepository = levelRoleRepository;
             _channelRepository = channelRepository;
         }
-
-        [Command(nameof(MakeMod))]
-        [Description("Make a member moderator")]
-        [RequirePermissions(Permissions.Administrator)]
-        public async Task MakeMod(CommandContext ctx, [Description("Discord member to make moderator")]
-            DiscordMember member)
+        
+        [SlashCommand(nameof(MakeMod), "Make a member moderator")]
+        [SlashRequirePermissions(Permissions.Administrator)]
+        public async Task MakeMod(InteractionContext ctx,
+            [Option("user", "Discord user to make moderator")] DiscordUser user)
         {
             var guildId = ctx.Guild.Id;
-            if (member == null)
+            if (user == null)
             {
-                await ctx.RespondAsync("No member specified for making moderator");
+                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("No user specified for making moderator"));
                 return;
             }
+
+            var member = (DiscordMember) user;
 
             var modRole = ctx.Guild.Roles.Values.FirstOrDefault(r => r.Name.ToLower().Contains("mod"));
             if (modRole == null)
             {
-                await ctx.RespondAsync("Internal error, could not find moderator role");
+                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("Internal error, could not find moderator role"));
                 return;
             }
 
@@ -70,26 +73,27 @@ namespace MacintoshBot.Commands
             succesEmbed.AddField("Member", $"{member.Mention}");
             succesEmbed.AddField("Role", $"{modRole.Mention}");
 
-            await ctx.RespondAsync(MacintoshEmbed.Create(succesEmbed));
+            await ctx.CreateResponseAsync(MacintoshEmbed.Create(succesEmbed));
         }
-
-        [Command(nameof(UnMod))]
-        [Description("Make a member moderator")]
-        [RequirePermissions(Permissions.Administrator)]
-        public async Task UnMod(CommandContext ctx, [Description("Discord member to make moderator")]
-            DiscordMember member)
+        
+        [SlashCommand(nameof(UnMod), "Revoke moderator permissions from a user")]
+        [SlashRequirePermissions(Permissions.Administrator)]
+        public async Task UnMod(InteractionContext ctx, [Description("Discord member to make moderator")]
+            [Option("user", "Discord user to revoking moderator permissions from")] DiscordUser user)
         {
             var guildId = ctx.Guild.Id;
-            if (member == null)
+            if (user == null)
             {
-                await ctx.RespondAsync("No member specified for making moderator");
+                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("No user specified for revoking moderator permissions"));
                 return;
             }
+
+            var member = (DiscordMember) user;
 
             var modRole = ctx.Guild.Roles.Values.FirstOrDefault(r => r.Name.ToLower().Contains("mod"));
             if (modRole == null)
             {
-                await ctx.RespondAsync("Internal error, could not find moderator role");
+                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("Internal error, could not find moderator role"));
                 return;
             }
 
@@ -107,19 +111,26 @@ namespace MacintoshBot.Commands
             
             succesEmbed.AddField("Member", $"{member.Mention}");
 
-            await ctx.RespondAsync(MacintoshEmbed.Create(succesEmbed));
+            await ctx.CreateResponseAsync(MacintoshEmbed.Create(succesEmbed));
         }
-
-        [Command(nameof(GrantRole))]
-        [Description("Grant a role to a member based on their id")]
-        [RequirePermissions(Permissions.ManageRoles)]
-        public async Task GrantRole(CommandContext ctx, [Description("Discord member to assign role")]
-            DiscordMember member, [Description("The role to give the user")]
-            DiscordRole role)
+        
+        [SlashCommand(nameof(GrantRole), "Grant a role to a member based on their id")]
+        [SlashRequirePermissions(Permissions.ManageRoles)]
+        public async Task GrantRole(InteractionContext ctx, 
+            [Option("user", "Discord member to assign role")] DiscordUser user, 
+            [Option("role", "The role to give the user")] DiscordRole role)
         {
             var guildId = ctx.Guild.Id;
             if (!role.Name.ToLower().Contains("moderator"))
             {
+                if (user == null)
+                {
+                    await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("No user specified for revoking moderator permissions"));
+                    return;
+                }
+
+                var member = (DiscordMember) user;
+                
                 var levelRole = await _levelRoleRepository.Get(role.Id, guildId);
                 if (levelRole.status == Status.Found)
                     //If it's a levelrole, remove their other roles
@@ -140,18 +151,17 @@ namespace MacintoshBot.Commands
                 succesEmbed.AddField("Member", $"{member.Mention}");
                 succesEmbed.AddField("Role", $"{role.Mention}");
 
-                await ctx.RespondAsync(MacintoshEmbed.Create(succesEmbed));
+                await ctx.CreateResponseAsync(MacintoshEmbed.Create(succesEmbed));
             }
             else
             {
-                await ctx.RespondAsync("Use the ?makemod command instead");
+                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"Use the '/{nameof(MakeMod)}' command instead"));
             }
         }
-
-        [Command(nameof(Groups))]
-        [Description("Get a list of all groups supported by the database")]
-        [RequirePermissions(Permissions.Administrator)]
-        public async Task Groups(CommandContext ctx)
+        
+        [SlashCommand(nameof(Groups), "Get a list of all groups supported by the database")]
+        [SlashRequirePermissions(Permissions.Administrator)]
+        public async Task Groups(InteractionContext ctx)
         {
             var guildId = ctx.Guild.Id;
             //Get the groups
@@ -171,53 +181,59 @@ namespace MacintoshBot.Commands
 
             //Send the group list to the member in a DM.
             await ctx.Member.SendMessageAsync(builder.ToString());
+            await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder());
         }
-
-        [Command(nameof(CreateGame))]
-        [Description(
-            "Create roles and channels for a new game\nInstructions:\n1. Set up a new emoji for the given role")]
-        [RequirePermissions(Permissions.Administrator)]
-        public async Task CreateGame(CommandContext ctx,
-            [Description("Emoji for the game")] DiscordEmoji emoji, [Description("Abreviation of the game")]
-            string name,
-            [Description(
-                "Full name of the game\n(this is optional, if the full name is not specified, the role will be called <abreviation>")]
+        
+        [SlashCommand(nameof(CreateGame), "Create roles and channels for a new game\nInstructions:\n1. Set up a new emoji for the given role")]
+        [SlashRequirePermissions(Permissions.Administrator)]
+        public async Task CreateGame(InteractionContext ctx,
+            [Option("emojiName", "Emoji for the game")] string emojiName, 
+            [Option("name", "Abreviation of the game")] string name,
+            [Option("fullName", "Full name of the game")]
             [RemainingText]
             string fullName = null)
         {
-            await CreateGroup(ctx, emoji, name, true, fullName);
+            await CreateGroup(ctx, emojiName, name, true, fullName);
         }
-
-        [Command(nameof(CreateGroup))]
-        [Description(
-            "Create roles and channels for a new group\nInstructions:\n1. Set up a new emoji for the given role")]
-        [RequirePermissions(Permissions.Administrator)]
-        public async Task CreateGroup(CommandContext ctx,
-            [Description("Emoji for the hangout")] DiscordEmoji emoji, [Description("Abreviation of the hangout")]
-            string name,
-            [Description(
-                "Full name of the hangout\n(this is optional, if the full name is not specified, the role will be called <abreviation>")]
+        
+        [SlashCommand(nameof(CreateGroup), "Create roles and channels for a new group\nInstructions:\n1. Set up a new emoji for the given role")]
+        [SlashRequirePermissions(Permissions.Administrator)]
+        public async Task CreateGroup(InteractionContext ctx,
+            [Option("emojiName", "Emoji for the group")] string emojiName, 
+            [Option("name", "Abreviation of the group")] string name,
+            [Option("fullName", "Full name of the group")]
             [RemainingText]
             string fullName = null)
         {
-            await CreateGroup(ctx, emoji, name, false, fullName);
+            
+            await CreateGroup(ctx, emojiName, name, false, fullName);
         }
 
-        private async Task CreateGroup(CommandContext ctx, DiscordEmoji emoji, string name, bool isGame,
-            string fullName = null)
+        private async Task CreateGroup(InteractionContext ctx, string emojiName, string name, bool isGame, string fullName = null)
         {
             var guildId = ctx.Guild.Id;
             //Send a working on it message and save it so we can modify it later. 
-            var message = await ctx.RespondAsync("Working on it...");
+            await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("Working on it..."));
             //Create the role
             var role = await CreateGroupRole(ctx, name, isGame);
             //Check if it did not get created
             if (role == null)
             {
-                await message.ModifyAsync("Uknown error when creating role");
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("Uknown error when creating role"));
                 return;
             }
 
+            DiscordEmoji emoji;
+            try
+            {
+                emoji = DiscordEmoji.FromName(ctx.Client, $":{emojiName}:");
+            }
+            catch (ArgumentException e)
+            {
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent($"Invalid emoji '{emojiName}'"));
+                return;
+            }
+            
             //Create the DTO's
             //group
             var group = new GroupDTO
@@ -233,7 +249,7 @@ namespace MacintoshBot.Commands
             var createdGroup = await _groupRepository.Create(group);
             if (createdGroup.status != Status.Created)
             {
-                await message.ModifyAsync("Error on inserting into database");
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("Error on inserting into database"));
                 return;
             }
 
@@ -246,7 +262,7 @@ namespace MacintoshBot.Commands
             //Check if it did not get created
             if (channel == null)
             {
-                await message.ModifyAsync("Uknown error when creating channels");
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("Uknown error when creating channels"));
                 return;
             }
 
@@ -254,7 +270,7 @@ namespace MacintoshBot.Commands
             var errorMessage = await ReactWithNewRoleEmoji(ctx, group);
             if (errorMessage != null)
             {
-                await message.ModifyAsync(errorMessage);
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent(errorMessage));
                 return;
             }
 
@@ -262,14 +278,14 @@ namespace MacintoshBot.Commands
             var roleChannel = await _channelRepository.Get("role", guildId);
             if (roleChannel.status != Status.Found)
             {
-                await message.ModifyAsync("Could not find the roles channel in the database");
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("Could not find the roles channel in the database"));
                 return;
             }
 
             var rolesChannel = ctx.Guild.Channels.Values.FirstOrDefault(c => c.Id == roleChannel.channel.ChannelId);
             if (rolesChannel == null)
             {
-                await message.ModifyAsync("Could not find the roles channel");
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("Could not find the roles channel"));
                 return;
             }
 
@@ -284,23 +300,22 @@ namespace MacintoshBot.Commands
            succesEmbed.AddField("Role", $"{role.Mention}", true);
            succesEmbed.AddField("Emoji", $"{emoji}", true);
            
-           await message.ModifyAsync(MacintoshEmbed.Create(succesEmbed));
+           await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(MacintoshEmbed.Create(succesEmbed)));
         }
-
-        [Command(nameof(RemoveGroup))]
-        [Description("Remove roles and channels for a group")]
-        [RequirePermissions(Permissions.Administrator)]
-        public async Task RemoveGroup(CommandContext ctx, [Description("Abreviation of the group")]
-            string name)
+        
+        [SlashCommand(nameof(RemoveGroup), "Remove roles and channels for a group")]
+        [SlashRequirePermissions(Permissions.Administrator)]
+        public async Task RemoveGroup(InteractionContext ctx,
+            [Option("name", "Abreviation of the group")] string name)
         {
             var guildId = ctx.Guild.Id;
             //Send a working on it message and save it so we can modify it later. 
-            var message = await ctx.RespondAsync("Working on it...");
+            await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("Working on it..."));
             //Get the group
             var group = await _groupRepository.Get(name, guildId);
             if (group.status != Status.Found)
             {
-                await message.ModifyAsync($"Could not find {name} in the database. Have you tried running ?groups");
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent($"Could not find {name} in the database. Have you tried running '/{nameof(group)}'"));
                 return;
             }
 
@@ -308,8 +323,7 @@ namespace MacintoshBot.Commands
             var role = ctx.Guild.Roles.Values.FirstOrDefault(r => r.Id == group.group.DiscordRoleId);
             if (role == null)
             {
-                await message.ModifyAsync(
-                    $"Could not find the role matching the group abbreviation: {group.group.Name}");
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent($"Could not find the belonging {role} in the database"));
                 return;
             }
 
@@ -318,7 +332,7 @@ namespace MacintoshBot.Commands
                 c.Name.ToLower().Contains(group.group.Name.ToLower()) && c.IsCategory);
             if (channel == null)
             {
-                await message.ModifyAsync($"Could not find the channel for {name}");
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent($"Could not find the channel for {name}"));
                 return;
             }
 
@@ -333,7 +347,7 @@ namespace MacintoshBot.Commands
             var status = await _groupRepository.Delete(name, guildId);
             if (status != Status.Deleted)
             {
-                await message.ModifyAsync($"Some error occured, did not remove {group.group.Name} from the database");
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent($"Some error occured, did not remove {group.group.Name} from the database"));
                 return;
             }
 
@@ -341,7 +355,7 @@ namespace MacintoshBot.Commands
             var errorMessage = await RemoveEmojiReactions(ctx, group.group);
             if (errorMessage != null)
             {
-                await message.ModifyAsync(errorMessage);
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent(errorMessage));
                 return;
             }
 
@@ -353,10 +367,10 @@ namespace MacintoshBot.Commands
             
             succesEmbed.AddField("Name", group.group.Name);
             
-            await message.ModifyAsync(MacintoshEmbed.Create(succesEmbed));
+            await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(MacintoshEmbed.Create(succesEmbed)));
         }
 
-        private async Task<DiscordRole> CreateGroupRole(CommandContext ctx, string name, bool isGame)
+        private async Task<DiscordRole> CreateGroupRole(InteractionContext ctx, string name, bool isGame)
         {
             var roleName = $"{name.Substring(0, 1).ToUpper() + name.Substring(1)}";
             if (isGame) roleName += " Gamer";
@@ -366,7 +380,7 @@ namespace MacintoshBot.Commands
             return role;
         }
 
-        private async Task<string> CreateChannelCategory(CommandContext ctx, string name, DiscordRole newRole)
+        private async Task<string> CreateChannelCategory(InteractionContext ctx, string name, DiscordRole newRole)
         {
             var overwriteBuilderList = CreateOverWritePermissions(ctx, newRole);
             //Create the channel with the given name, and fixed subcategories. 
@@ -382,7 +396,7 @@ namespace MacintoshBot.Commands
             return $"{name.ToUpper()}";
         }
 
-        private async Task<string> CreateChannelHangout(CommandContext ctx, string name, DiscordRole newRole)
+        private async Task<string> CreateChannelHangout(InteractionContext ctx, string name, DiscordRole newRole)
         {
             var overwriteBuilderList = CreateOverWritePermissions(ctx, newRole);
             //Create the channel with the given name, and fixed subcategories. 
@@ -395,7 +409,7 @@ namespace MacintoshBot.Commands
             return $"{name.ToUpper()}";
         }
 
-        private IEnumerable<DiscordOverwriteBuilder> CreateOverWritePermissions(CommandContext ctx, DiscordRole newRole)
+        private IEnumerable<DiscordOverwriteBuilder> CreateOverWritePermissions(InteractionContext ctx, DiscordRole newRole)
         {
             var overwriteBuilderList = new List<DiscordOverwriteBuilder>();
             //Deny access for everyone without moderator privelages.
@@ -419,7 +433,7 @@ namespace MacintoshBot.Commands
             return overwriteBuilderList;
         }
 
-        private async Task<string> ReactWithNewRoleEmoji(CommandContext ctx, GroupDTO group)
+        private async Task<string> ReactWithNewRoleEmoji(InteractionContext ctx, GroupDTO group)
         {
             var guildId = ctx.Guild.Id;
             //Get the "roles" channel
@@ -441,7 +455,7 @@ namespace MacintoshBot.Commands
             return null;
         }
 
-        private async Task<string> RemoveEmojiReactions(CommandContext ctx, GroupDTO group)
+        private async Task<string> RemoveEmojiReactions(InteractionContext ctx, GroupDTO group)
         {
             var guildId = ctx.Guild.Id;
             //Get the "roles" channel

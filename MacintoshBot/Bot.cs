@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 using DSharpPlus;
@@ -7,6 +8,7 @@ using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
 using DSharpPlus.Lavalink;
 using DSharpPlus.Net;
+using DSharpPlus.SlashCommands;
 using MacintoshBot.ClientHandler;
 using MacintoshBot.Commands;
 using MacintoshBot.Commands.Riot;
@@ -27,6 +29,7 @@ namespace MacintoshBot
     {
         private readonly DiscordClient _client;
         private readonly CommandsNextExtension _commands;
+        private readonly SlashCommandsExtension _slash;
         private readonly IChannelRepository _channelRepository;
         private readonly IClientHandler _clientHandler;
         private readonly IGroupRepository _groupRepository;
@@ -67,7 +70,12 @@ namespace MacintoshBot
                 Services = services
             };
 
-            //adding hooks
+            var slashCommandsConfig = new SlashCommandsConfiguration
+            {
+                Services = services
+            };
+
+            // adding hooks
             _client.Ready += OnClientReady;
             _client.MessageReactionAdded += OnReactionAdded;
             _client.MessageReactionRemoved += OnReactionRemoved;
@@ -76,15 +84,18 @@ namespace MacintoshBot
             _client.GuildAvailable += OnGuildAvailable;
             _client.VoiceStateUpdated += OnVoiceStateUpdate;
             _client.GuildRoleUpdated += OnGuildRoleUpdated;
+            
+            // slash commands adding
+            _slash = _client.UseSlashCommands(slashCommandsConfig);
+            _slash.RegisterCommands<LevelCommands>();
+            _slash.RegisterCommands<ManageCommands>();
 
-            //Commands adding
+            // commands adding
             _commands = _client.UseCommandsNext(commandsConfig);
             _commands.RegisterCommands<ConnectionCommands>();
             _commands.RegisterCommands<RustCommands>();
             _commands.RegisterCommands<CsCommands>();
             _commands.RegisterCommands<LeagueCommands>();
-            _commands.RegisterCommands<ManageCommands>();
-            _commands.RegisterCommands<LevelCommands>();
             _commands.RegisterCommands<RandomCommands>();
             _commands.RegisterCommands<MusicCommands>();
             
@@ -97,7 +108,7 @@ namespace MacintoshBot
             var endpoint = new ConnectionEndpoint
             {
                 Hostname = lavalinkConfig.Host,
-                Port = int.Parse(lavalinkConfig.Port),
+                Port = int.Parse(lavalinkConfig.Port)
             };
 
             _lavalinkConfiguration = new LavalinkConfiguration
@@ -105,6 +116,7 @@ namespace MacintoshBot
                 Password = lavalinkConfig.Password,
                 RestEndpoint = endpoint,
                 SocketEndpoint = endpoint
+                
             };
         }
         
@@ -121,8 +133,15 @@ namespace MacintoshBot
                 UserStatus.Online);
             
             _logger.LogInformation("Lavalink starting...");
-            var lavalink = _client.UseLavalink();
-            await lavalink.ConnectAsync(_lavalinkConfiguration);
+            try
+            {
+                //var lavalink = _client.UseLavalink();
+                //await lavalink.ConnectAsync(_lavalinkConfiguration);
+            }
+            catch (WebSocketException e)
+            {
+                _logger.LogError("Not able to connect to lavalink", e);
+            }
         }
 
         public async Task StopAsync(CancellationToken cancellationToken)

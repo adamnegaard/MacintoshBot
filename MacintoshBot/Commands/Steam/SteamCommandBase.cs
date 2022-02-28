@@ -95,7 +95,7 @@ namespace MacintoshBot.Commands.Steam
             }
         }
 
-        protected DiscordMessageBuilder GetPrivateSteamProfileEmbed()
+        protected DiscordEmbed GetPrivateSteamProfileEmbed()
         {
             return MacintoshEmbed.Create(new DiscordEmbedBuilder
             {

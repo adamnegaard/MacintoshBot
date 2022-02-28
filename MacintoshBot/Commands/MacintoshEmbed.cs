@@ -5,17 +5,14 @@ namespace MacintoshBot.Commands
 {
     public class MacintoshEmbed
     {
-        public static DiscordMessageBuilder Create(DiscordEmbedBuilder embed)
+        public static DiscordEmbed Create(DiscordEmbedBuilder embed)
         {
             embed.Color = new DiscordColor("#7289da");
             embed.Timestamp = DateTimeOffset.Now;
-            return new DiscordMessageBuilder
-            {
-                Embed = embed
-            };
+            return embed.Build();
         }
 
-        public static DiscordMessageBuilder ErrorEmbed(string errorMessage)
+        public static DiscordEmbed ErrorEmbed(string errorMessage)
         {
             return Create(new DiscordEmbedBuilder
             {

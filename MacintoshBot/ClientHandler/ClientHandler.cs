@@ -90,7 +90,7 @@ namespace MacintoshBot.ClientHandler
                 await assignMessage.CreateReactionAsync(DiscordEmoji.FromName(client, game.EmojiName));
         }
 
-        public async Task<DiscordMessageBuilder> GetLevelEmbed(DiscordClient client, ulong guildId, string title, DiscordMember member)
+        public async Task<DiscordEmbed> GetLevelEmbed(DiscordClient client, ulong guildId, string title, DiscordMember member)
         {
             //Start the embed with relevant fields
             var memberDays = _levelRoleRepository.GetDays(member.JoinedAt);
