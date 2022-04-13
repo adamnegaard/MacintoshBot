@@ -131,8 +131,9 @@ namespace MacintoshBot
             await _client.DisconnectAsync();
         }
 
-        private static Task OnClientReady(DiscordClient client, ReadyEventArgs eventArgs)
+        private Task OnClientReady(DiscordClient client, ReadyEventArgs eventArgs)
         {
+            _logger.LogInformation("Bot ready...");
             return Task.CompletedTask;
         }
     }
