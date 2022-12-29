@@ -36,7 +36,7 @@ jobs:
       run: lsof -t -i:$PORT | xargs kill
       continue-on-error: true
     - name: Deploy
-      # run the application in the background
+      # run the application in the backgroundd
       # RUNNER_TRACKING_ID is used so the process does not get killed when the build script is finished
       run: |
         cd MacintoshBot/bin/Debug/net5.0/linux-x64/publish/
